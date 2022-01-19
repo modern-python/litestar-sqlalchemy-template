@@ -1,27 +1,19 @@
-from fastapi import Depends, FastAPI
+from starlite import Starlite
+from starlite.exceptions import ValidationException
 
-from app import exceptions
-from app.apps.decks.views import router as decks_router
+from app.apps.decks.views import decks_router
 from app.config import settings
-from app.db.deps import set_db
 from app.db.exceptions import DatabaseValidationError
+from app.db.middleware import SQLAlchemySessionMiddleware
+from app.exceptions import database_validation_exception_handler, request_validation_exception_handler
 
 
-def get_app() -> FastAPI:
-    _app = FastAPI(
-        title=settings.SERVICE_NAME,
-        debug=settings.DEBUG,
-        dependencies=[Depends(set_db)],
-    )
-
-    _app.include_router(decks_router, prefix="/api")
-
-    _app.add_exception_handler(
-        DatabaseValidationError,
-        exceptions.database_validation_exception_handler,
-    )
-
-    return _app
-
-
-app = get_app()
+app = Starlite(
+    route_handlers=[decks_router],
+    debug=settings.DEBUG,
+    middleware=[] if settings.IS_TESTING else [SQLAlchemySessionMiddleware],
+    exception_handlers={
+        DatabaseValidationError: database_validation_exception_handler,  # type: ignore
+        ValidationException: request_validation_exception_handler,  # type: ignore
+    },
+)

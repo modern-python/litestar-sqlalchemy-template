@@ -1,9 +1,9 @@
-import pytest
+import pytest_asyncio
 
 from app.apps.decks import models, schemas
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def deck(db_context):
     deck_data = schemas.DeckCreate(**get_deck_data())
     deck = models.Deck(**deck_data.dict())
@@ -15,14 +15,14 @@ def get_deck_data():
     return {"name": "test deck", "description": "test deck description"}
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def card(db_context, deck: models.Deck):
     instance = models.Card(**card_data.dict(), deck_id=deck.id)
     await instance.save()
     return instance
 
 
-@pytest.fixture
+@pytest_asyncio.fixture
 async def another_card(db_context, deck: models.Deck):
     instance = models.Card(**another_card_data.dict(), deck_id=deck.id)
     await instance.save()

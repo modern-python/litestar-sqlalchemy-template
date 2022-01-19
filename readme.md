@@ -1,4 +1,4 @@
-## Async template on FastAPI and SQLAlchemy 1.4
+## Async template on Starlite and SQLAlchemy 1.4
 
 [![GitHub issues](https://img.shields.io/github/issues/lesnik512/fast-api-sqlalchemy-template)](https://github.com/lesnik512/fast-api-sqlalchemy-template/issues)
 [![GitHub forks](https://img.shields.io/github/forks/lesnik512/fast-api-sqlalchemy-template)](https://github.com/lesnik512/fast-api-sqlalchemy-template/network)
@@ -6,7 +6,7 @@
 [![GitHub license](https://img.shields.io/github/license/lesnik512/fast-api-sqlalchemy-template)](https://github.com/lesnik512/fast-api-sqlalchemy-template/blob/main/LICENSE)
 
 ### Description
-Production-ready dockerized async REST API on FastAPI with SQLAlchemy and PostgreSQL
+Production-ready dockerized async REST API on Starlite with SQLAlchemy and PostgreSQL
 
 ## Key Features
 - tests on `pytest` with automatic rollback after each test case

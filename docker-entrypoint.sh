@@ -24,12 +24,12 @@ case "$1" in
         mypy .
         alembic downgrade base
         alembic upgrade head
-        pytest -s -vv tests/
+        IS_TESTING="TRUE" pytest -s -vv tests/
         ;;
     pytest)
         alembic downgrade base
         alembic upgrade head
-        pytest -s -vv -x tests/
+        IS_TESTING="TRUE" pytest -s -vv -x tests/
         ;;
     *)
         exec "$@"

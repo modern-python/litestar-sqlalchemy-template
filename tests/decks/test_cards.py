@@ -1,6 +1,6 @@
 import pytest
-from fastapi import status
 from httpx import AsyncClient
+from starlette import status
 
 from app.apps.decks import models
 from tests.decks.conftest import another_card_data, card_data
@@ -10,16 +10,16 @@ pytestmark = pytest.mark.asyncio
 
 
 async def test_get_cards_empty(client: AsyncClient, deck: models.Deck):
-    response = await client.get(f"/api/decks/{deck.id}/cards/")
+    response = await client.get(f"/api/decks/{deck.id}/cards")
     assert response.status_code == status.HTTP_200_OK
     assert len(response.json()["items"]) == 0
 
-    response = await client.get(f"/api/decks/{deck.id}/cards/0/")
+    response = await client.get(f"/api/decks/{deck.id}/cards/0")
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 async def test_get_cards(client: AsyncClient, card: models.Card):
-    response = await client.get(f"/api/decks/{card.deck_id}/cards/")
+    response = await client.get(f"/api/decks/{card.deck_id}/cards")
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
     assert len(data["items"]) == 1
@@ -28,7 +28,7 @@ async def test_get_cards(client: AsyncClient, card: models.Card):
 
 
 async def test_get_card(client: AsyncClient, card: models.Card):
-    response = await client.get(f"/api/cards/{card.id}/")
+    response = await client.get(f"/api/cards/{card.id}")
     assert response.status_code == status.HTTP_200_OK
     for k, v in response.json().items():
         assert v == getattr(card, k)
@@ -38,14 +38,14 @@ async def test_get_card(client: AsyncClient, card: models.Card):
 async def test_create_cards(client: AsyncClient, deck: models.Deck):
     # bulk create
     response = await client.post(
-        f"/api/decks/{deck.id}/cards/",
+        f"/api/decks/{deck.id}/cards",
         json=[card_data.dict(), another_card_data.dict()],
     )
-    assert response.status_code == status.HTTP_200_OK
+    assert response.status_code == status.HTTP_201_CREATED
     created_data = response.json()
 
     # check creation
-    response = await client.get(f"/api/decks/{deck.id}/cards/")
+    response = await client.get(f"/api/decks/{deck.id}/cards")
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
     assert created_data == data
@@ -57,7 +57,7 @@ async def test_create_cards(client: AsyncClient, deck: models.Deck):
 
     # unique constraint error
     response = await client.post(
-        f"/api/decks/{deck.id}/cards/",
+        f"/api/decks/{deck.id}/cards",
         json=[card_data.dict(), another_card_data.dict()],
     )
     data = response.json()
@@ -86,8 +86,8 @@ async def test_update_cards(
             "hint": "card hint2 updated",
         },
     ]
-    response = await client.put(
-        f"/api/decks/{deck.id}/cards/",
+    response = await client.patch(
+        f"/api/decks/{deck.id}/cards",
         json=updated_data,
     )
     assert response.status_code == status.HTTP_200_OK
@@ -97,7 +97,7 @@ async def test_update_cards(
     assert cards == updated_data
 
     # check creation
-    response = await client.get(f"/api/decks/{deck.id}/cards/")
+    response = await client.get(f"/api/decks/{deck.id}/cards")
     assert response.status_code == status.HTTP_200_OK
     cards = response.json()["items"]
     assert len(cards) == 2

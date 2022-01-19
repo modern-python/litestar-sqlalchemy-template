@@ -6,8 +6,8 @@
 
 .DEFAULT_GOAL := run_tests
 
-## up:        start app in docker
-up: down
+## run:       start app in docker
+run: down
 	docker-compose up
 
 ## pytest:    run pytest (with down/up migrations before)

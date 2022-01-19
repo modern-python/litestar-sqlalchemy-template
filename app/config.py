@@ -3,7 +3,7 @@ from sqlalchemy.engine.url import URL
 
 
 class Settings(BaseSettings):
-    SERVICE_NAME: str = "FastApi"
+    IS_TESTING: bool = False
     DEBUG: bool = False
 
     DB_DRIVER: str = "postgresql+asyncpg"

@@ -8,8 +8,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
 from app.db.base import Base
-from app.db.deps import get_db
 from app.db.exceptions import DatabaseValidationError
+from app.db.middleware import get_db
 from app.db.utils import operators_map
 from app.utils.datetime import utcnow
 

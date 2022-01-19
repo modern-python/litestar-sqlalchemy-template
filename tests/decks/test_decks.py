@@ -1,6 +1,6 @@
 import pytest
-from fastapi import status
 from httpx import AsyncClient
+from starlette import status
 
 from app.apps.decks import models
 from tests.decks.conftest import get_deck_data
@@ -10,18 +10,18 @@ pytestmark = pytest.mark.asyncio
 
 
 async def test_get_decks_empty(client: AsyncClient):
-    response = await client.get("/api/decks/")
+    response = await client.get("/api/decks")
     assert response.status_code == status.HTTP_200_OK
     assert len(response.json()["items"]) == 0
 
 
 async def test_get_decks_not_exist(client: AsyncClient):
-    response = await client.get("/api/decks/0/")
+    response = await client.get("/api/decks/0")
     assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
 async def test_get_decks(client: AsyncClient, deck: models.Deck):
-    response = await client.get("/api/decks/")
+    response = await client.get("/api/decks")
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
     assert len(data["items"]) == 1
@@ -30,7 +30,7 @@ async def test_get_decks(client: AsyncClient, deck: models.Deck):
 
 
 async def test_get_deck(client: AsyncClient, deck: models.Deck, card: models.Card):
-    response = await client.get(f"/api/decks/{deck.id}/")
+    response = await client.get(f"/api/decks/{deck.id}")
     assert response.status_code == status.HTTP_200_OK
     data = response.json()
     assert len(data["cards"]) == 1
@@ -44,8 +44,8 @@ async def test_get_deck(client: AsyncClient, deck: models.Deck, card: models.Car
     "name,description,status_code",
     [
         (None, None, status.HTTP_422_UNPROCESSABLE_ENTITY),
-        ("test deck", None, status.HTTP_200_OK),
-        ("test deck", "test deck description", status.HTTP_200_OK),
+        ("test deck", None, status.HTTP_201_CREATED),
+        ("test deck", "test deck description", status.HTTP_201_CREATED),
     ],
 )
 async def test_post_decks(
@@ -55,19 +55,14 @@ async def test_post_decks(
     status_code: int,
 ):
     # create deck
-    response = await client.post(
-        "/api/decks/",
-        json={
-            "name": name,
-            "description": description,
-        },
-    )
+    data = {"name": name, "description": description}
+    response = await client.post("/api/decks", json=data)
     assert response.status_code == status_code
 
     # get item
     if status_code == status.HTTP_200_OK:
         item_id = response.json()["id"]
-        response = await client.get(f"/api/decks/{item_id}/")
+        response = await client.get(f"/api/decks/{item_id}")
         assert response.status_code == status.HTTP_200_OK
         result = response.json()
         assert item_id == result["id"]
@@ -92,7 +87,7 @@ async def test_post_decks(
         ),
     ],
 )
-async def test_put_decks(
+async def test_update_decks(
     client: AsyncClient,
     deck: models.Deck,
     name: str,
@@ -100,16 +95,13 @@ async def test_put_decks(
     status_code: int,
 ):
     # update deck
-    response = await client.put(
-        f"/api/decks/{deck.id}/",
-        json={"name": name, "description": description},
-    )
+    response = await client.patch(f"/api/decks/{deck.id}", json={"name": name, "description": description})
     assert response.status_code == status_code
 
     # get item
     if status_code == status.HTTP_200_OK:
         item_id = response.json()["id"]
-        response = await client.get(f"/api/decks/{item_id}/")
+        response = await client.get(f"/api/decks/{item_id}")
         assert response.status_code == status.HTTP_200_OK
         result = response.json()
         assert name == result["name"]
