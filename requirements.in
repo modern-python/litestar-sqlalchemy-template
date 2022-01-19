@@ -1,6 +1,6 @@
 -c constraints.txt
 
-fastapi
+starlite
 uvicorn
 python-dotenv
 

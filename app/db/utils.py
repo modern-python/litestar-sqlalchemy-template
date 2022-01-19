@@ -5,7 +5,7 @@ from typing import AsyncGenerator
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.sql import operators
 
-from app.db.deps import get_db
+from app.db.middleware import get_db
 
 
 logger = logging.getLogger(__name__)

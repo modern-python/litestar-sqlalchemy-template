@@ -4,9 +4,9 @@
 #
 #    pip-compile constraints.in
 #
-anyio==3.4.0
+anyio==3.5.0
     # via httpcore
-astroid==2.9.0
+astroid==2.9.3
     # via pylint
 attrs==21.4.0
     # via pytest
@@ -18,7 +18,7 @@ certifi==2021.10.8
     #   httpx
 cfgv==3.3.1
     # via pre-commit
-charset-normalizer==2.0.9
+charset-normalizer==2.0.10
     # via httpx
 click==8.0.3
     # via black
@@ -28,11 +28,11 @@ filelock==3.4.2
     # via virtualenv
 h11==0.12.0
     # via httpcore
-httpcore==0.14.3
+httpcore==0.14.5
     # via httpx
-httpx==0.21.1
+httpx==0.21.3
     # via -r constraints.in
-identify==2.4.1
+identify==2.4.4
     # via pre-commit
 idna==3.3
     # via
@@ -48,7 +48,7 @@ lazy-object-proxy==1.7.1
     # via astroid
 mccabe==0.6.1
     # via pylint
-mypy==0.930
+mypy==0.931
     # via -r constraints.in
 mypy-extensions==0.4.3
     # via
@@ -79,7 +79,7 @@ pytest==6.2.5
     # via
     #   -r constraints.in
     #   pytest-asyncio
-pytest-asyncio==0.16.0
+pytest-asyncio==0.17.2
     # via -r constraints.in
 pyyaml==6.0
     # via pre-commit
@@ -107,7 +107,7 @@ typing-extensions==4.0.1
     #   black
     #   mypy
     #   pylint
-virtualenv==20.11.2
+virtualenv==20.13.0
     # via pre-commit
 wrapt==1.13.3
     # via astroid
