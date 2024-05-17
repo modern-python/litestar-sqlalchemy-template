@@ -1,30 +1,20 @@
-## Async template on Starlite and SQLAlchemy 1.4
+## Async template on LiteStar and SQLAlchemy 2
 
-[![GitHub issues](https://img.shields.io/github/issues/lesnik512/starlite-sqlalchemy-template)](https://github.com/lesnik512/starlite-sqlalchemy-template/issues)
-[![GitHub forks](https://img.shields.io/github/forks/lesnik512/starlite-sqlalchemy-template)](https://github.com/lesnik512/starlite-sqlalchemy-template/network)
-[![GitHub stars](https://img.shields.io/github/stars/lesnik512/starlite-sqlalchemy-template)](https://github.com/lesnik512/starlite-sqlalchemy-template/stargazers)
-[![GitHub license](https://img.shields.io/github/license/lesnik512/starlite-sqlalchemy-template)](https://github.com/lesnik512/starlite-sqlalchemy-template/blob/main/LICENSE)
+[![GitHub issues](https://img.shields.io/github/issues/modern-python/litestar-sqlalchemy-template)](https://github.com/modern-python/litestar-sqlalchemy-template/issues)
+[![GitHub forks](https://img.shields.io/github/forks/modern-python/litestar-sqlalchemy-template)](https://github.com/modern-python/litestar-sqlalchemy-template/network)
+[![GitHub stars](https://img.shields.io/github/stars/modern-python/litestar-sqlalchemy-template)](https://github.com/modern-python/litestar-sqlalchemy-template/stargazers)
+[![GitHub license](https://img.shields.io/github/license/modern-python/litestar-sqlalchemy-template)](https://github.com/modern-python/litestar-sqlalchemy-template/blob/main/LICENSE)
 
 ### Description
-Production-ready dockerized async REST API on Starlite with SQLAlchemy and PostgreSQL
+Production-ready dockerized async REST API on LiteStar with SQLAlchemy and PostgreSQL
 
 ## Key Features
 - tests on `pytest` with automatic rollback after each test case
-- db session stored in Python's `context variable`
-- separate requirements files for dev and production using `pip-tools`
-- configs for `mypy`, `pylint`, `isort` and `black`
+- IOC (Inversion of Control) container built on [that-depends](https://github.com/modern-python/that-depends/) - my DI framework
+- Linting and formatting using `ruff` and `mypy`
 - `Alembic` for DB migrations
-- CI with Github
 
 ### After `git clone` run
 ```bash
-make help
-```
-
-### Prepare virtual environment
-```bash
-python3 -m venv venv
-source venv/bin/activate
-pip install --upgrade pip
-pip install pip-tools
+task -l  # list of tasks with descriptions
 ```
