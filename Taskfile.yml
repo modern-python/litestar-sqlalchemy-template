@@ -1,0 +1,42 @@
+version: "3"
+
+tasks:
+  down:
+    desc: "down all app containers"
+    cmds:
+      - docker compose down --remove-orphans
+
+  sh:
+    desc: "run shell in container"
+    cmds:
+      - docker compose run --service-ports application bash
+
+  tests:
+    desc: "run pytest (pass args after '--')"
+    cmds:
+      - task: down
+      - docker compose run application sh -c "sleep 1 && alembic downgrade base && alembic upgrade head && pytest {{.CLI_ARGS}}"
+      - task: down
+
+  migration:
+    desc: "create alembic migration (pass args after '--')"
+    cmds:
+      - docker compose run application sh -c "sleep 1 && alembic upgrade head && alembic revision --autogenerate {{.CLI_ARGS}}"
+      - task: down
+
+  build:
+    desc: "build app docker container"
+    cmds:
+      - docker compose build application
+
+  install:
+    desc: "install local dependencies"
+    cmds:
+      - poetry install --sync --no-root
+
+  lint:
+    desc: "run linters"
+    cmds:
+      - poetry run ruff format .
+      - poetry run ruff check . --fix
+      - poetry run mypy .

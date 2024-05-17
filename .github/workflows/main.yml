@@ -8,10 +8,27 @@ on:
     branches:
       - main
 
-jobs:
-  action:
-    runs-on: ubuntu-latest
+concurrency:
+  group: ${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
 
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+      - run: |
+          pip install -U pip poetry
+          poetry install --sync --no-root
+          poetry run ruff format . --check
+          poetry run ruff check . --no-fix
+          poetry run mypy .
+
+  pytest:
+    runs-on: ubuntu-latest
     services:
       postgres:
         image: postgres:latest
@@ -27,21 +44,18 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
     steps:
-      - uses: actions/checkout@v1
-
-      - name: install python
-        uses: actions/setup-python@v1
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v4
         with:
-          python-version: 3.9
-
-      - name: install requirements
-        run: pip3 install --no-cache-dir -r requirements.txt -r requirements.dev.txt
-
-      - name: run checks and tests
-        run: ./docker-entrypoint.sh tests
+          python-version: "3.12"
+      - run: |
+          pip install -U pip poetry
+          poetry install --sync --no-root
+          poetry run alembic upgrade head
+          poetry run pytest
         env:
+          ENVIRONMENT: dev
           PYTHONDONTWRITEBYTECODE: 1
           PYTHONUNBUFFERED: 1
           DB_HOST: 127.0.0.1

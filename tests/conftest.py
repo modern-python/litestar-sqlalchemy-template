@@ -1,61 +1,37 @@
-import asyncio
+import typing
 
 import pytest
-import pytest_asyncio
-from httpx import AsyncClient
-from sqlalchemy import event
-from sqlalchemy.engine import Transaction
+from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy.orm import Session
 
-from app.db.base import engine
-from app.db.middleware import session_context_var
-from app.main import app
+from app import ioc
+from app.application import application
 
 
-@pytest.fixture(scope="session")
-def event_loop(request):
-    """Redefined event loop fixture with bigger scope"""
-    loop = asyncio.get_event_loop_policy().new_event_loop()
-    yield loop
-    loop.close()
-
-
-@pytest_asyncio.fixture
-async def db():
-    # https://docs.sqlalchemy.org/en/14/orm/session_transaction.html#joining-a-session-into-an-external-transaction-such-as-for-test-suites
-    connection = await engine.connect()
-    transaction = await connection.begin()
-    session = AsyncSession(bind=connection, expire_on_commit=False, future=True)
-    await connection.begin_nested()
-
-    @event.listens_for(session.sync_session, "after_transaction_end")
-    def end_savepoint(session: Session, transaction: Transaction) -> None:
-        """async events are not implemented yet, recreates savepoints to avoid final commits"""
-        # https://github.com/sqlalchemy/sqlalchemy/issues/5811#issuecomment-756269881
-        if connection.closed:
-            return
-        if not connection.in_nested_transaction():
-            connection.sync_connection.begin_nested()
-
-    yield session
-
-    if session.in_transaction():
-        await transaction.rollback()
-    await connection.close()
-
-
-@pytest_asyncio.fixture
-def db_context(db: AsyncSession):
-    token = session_context_var.set(db)
-    yield
-    session_context_var.reset(token)
-
-
-@pytest_asyncio.fixture
-async def client(db_context):
+@pytest.fixture()
+async def client() -> typing.AsyncIterator[AsyncClient]:
     async with AsyncClient(
-        app=app,
+        transport=ASGITransport(app=application),  # type: ignore[arg-type]
         base_url="http://test",
     ) as client:
         yield client
+
+
+@pytest.fixture(autouse=True)
+async def _prepare_ioc_container() -> typing.AsyncIterator[None]:
+    engine = await ioc.IOCContainer.database_engine()
+    connection = await engine.connect()
+    transaction = await connection.begin()
+    await connection.begin_nested()
+    session = AsyncSession(connection, expire_on_commit=False, autoflush=False)
+    ioc.IOCContainer.session.override(session)
+
+    try:
+        yield
+    finally:
+        if connection.in_transaction():
+            await transaction.rollback()
+        await connection.close()
+
+        ioc.IOCContainer.reset_override()
+        await ioc.IOCContainer.tear_down()
