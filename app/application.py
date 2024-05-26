@@ -21,6 +21,7 @@ class AppBuilder:
     @contextlib.asynccontextmanager
     async def lifespan_manager(self, _: litestar.Litestar | None) -> typing.AsyncIterator[None]:
         try:
+            await ioc.IOCContainer.init_async_resources()
             yield
         finally:
             await ioc.IOCContainer.tear_down()
