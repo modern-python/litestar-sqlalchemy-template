@@ -2,10 +2,10 @@ import contextlib
 import typing
 
 import litestar
+from advanced_alchemy.exceptions import ForeignKeyError
 
 from app import exceptions, ioc
 from app.api.decks import ROUTER
-from app.exceptions import DatabaseValidationError
 
 
 class AppBuilder:
@@ -14,7 +14,7 @@ class AppBuilder:
         self.app: litestar.Litestar = litestar.Litestar(
             debug=self.settings.debug,
             lifespan=[self.lifespan_manager],
-            exception_handlers={DatabaseValidationError: exceptions.database_validation_exception_handler},
+            exception_handlers={ForeignKeyError: exceptions.database_validation_exception_handler},
             route_handlers=[ROUTER],
         )
 
