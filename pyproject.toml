@@ -1,33 +1,40 @@
-[tool.poetry]
+[project]
 name = "litestar-sqlalchemy-template"
 version = "0"
 description = "Async template on LiteStar and SQLAlchemy 2"
-authors = ["Artur Shiriev <me@shiriev.ru>"]
+readme = "README.md"
+requires-python = ">=3.12"
+authors = [
+    { email = "me@shiriev.ru" },
+    { name = "Artur Shiriev"}
+]
 license = "MIT License"
+dependencies = [
+    "litestar",
+    "advanced-alchemy",
+    "pydantic-settings",
+    "granian",
+    "that-depends",
+    # database
+    "alembic",
+    "psycopg2",
+    "sqlalchemy",
+    "asyncpg",
+]
 
-
-[tool.poetry.dependencies]
-python = "3.12.*"
-litestar = "*"
-advanced-alchemy = "*"
-pydantic-settings = "*"
-granian = "*"
-that-depends = "*"
-# database
-alembic = "*"
-psycopg2 = "*"
-sqlalchemy = "*"
-asyncpg = "*"
-
-[tool.poetry.group.dev.dependencies]
-polyfactory = "*"
-httpx = "*"
-pytest = "*"
-pytest-cov = "*"
-pytest-asyncio = "*"
-ruff = "*"
-mypy = "*"
-asyncpg-stubs = "*"
+[project.optional-dependencies]
+test = [
+    "polyfactory",
+    "httpx",
+    "pytest",
+    "pytest-cov",
+    "pytest-asyncio",
+]
+lint = [
+    "ruff",
+    "mypy",
+    "asyncpg-stubs",
+]
 
 [tool.ruff]
 fix = true
