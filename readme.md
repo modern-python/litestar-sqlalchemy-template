@@ -16,5 +16,5 @@ Production-ready dockerized async REST API on LiteStar with SQLAlchemy and Postg
 
 ### After `git clone` run
 ```bash
-task -l  # list of tasks with descriptions
+just --list
 ```
