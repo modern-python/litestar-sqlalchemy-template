@@ -96,7 +96,7 @@ async def test_create_cards(
     )
     data = response.json()
     assert response.status_code == status_codes.HTTP_400_BAD_REQUEST, response.text
-    assert data["extra"][0]["message"] == "A foreign key is missing or invalid"
+    assert data["detail"] == "A foreign key is missing or invalid"
 
 
 @inject

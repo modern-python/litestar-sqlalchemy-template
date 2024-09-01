@@ -14,7 +14,7 @@ class AppBuilder:
         self.app: litestar.Litestar = litestar.Litestar(
             debug=self.settings.debug,
             lifespan=[self.lifespan_manager],
-            exception_handlers={ForeignKeyError: exceptions.database_validation_exception_handler},
+            exception_handlers={ForeignKeyError: exceptions.foreign_key_error_handler},
             route_handlers=[ROUTER],
         )
 

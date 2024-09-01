@@ -301,18 +301,16 @@ dependencies = [
     { name = "that-depends" },
 ]
 
-[package.optional-dependencies]
-lint = [
+[package.dev-dependencies]
+dev = [
     { name = "asyncpg-stubs" },
-    { name = "mypy" },
-    { name = "ruff" },
-]
-test = [
     { name = "httpx" },
+    { name = "mypy" },
     { name = "polyfactory" },
     { name = "pytest" },
     { name = "pytest-asyncio" },
     { name = "pytest-cov" },
+    { name = "ruff" },
 ]
 
 [package.metadata]
@@ -320,20 +318,24 @@ requires-dist = [
     { name = "advanced-alchemy" },
     { name = "alembic" },
     { name = "asyncpg" },
-    { name = "asyncpg-stubs", marker = "extra == 'lint'" },
     { name = "granian" },
-    { name = "httpx", marker = "extra == 'test'" },
     { name = "litestar" },
-    { name = "mypy", marker = "extra == 'lint'" },
-    { name = "polyfactory", marker = "extra == 'test'" },
     { name = "psycopg2" },
     { name = "pydantic-settings" },
-    { name = "pytest", marker = "extra == 'test'" },
-    { name = "pytest-asyncio", marker = "extra == 'test'" },
-    { name = "pytest-cov", marker = "extra == 'test'" },
-    { name = "ruff", marker = "extra == 'lint'" },
     { name = "sqlalchemy" },
     { name = "that-depends" },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "asyncpg-stubs" },
+    { name = "httpx" },
+    { name = "mypy" },
+    { name = "polyfactory" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+    { name = "ruff" },
 ]
 
 [[package]]
@@ -745,11 +747,11 @@ wheels = [
 
 [[package]]
 name = "that-depends"
-version = "1.17.0"
+version = "1.17.1"
 source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/67/38/ac04ca7474ae0e4267e26f28bf133ad01e68fb534efdd749a48baafef1a2/that_depends-1.17.0.tar.gz", hash = "sha256:5cf2bf468a27c6fdab36754ddb1d56337ba4b3a0316c07ddde092eee86813ba2", size = 10042 }
+sdist = { url = "https://files.pythonhosted.org/packages/69/19/3f5b05c3fbff32211767b860fffcf8fcf8f96165b517c1f3f7bee8dc01d5/that_depends-1.17.1.tar.gz", hash = "sha256:9a8d7ab9b9582234c7efde97251f701a614219210c5e694dbfa30e131b9ec163", size = 52720 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/b6/6b/9d95db5f92acaee42e6619d9871fe5b1cdf9f1f0f76ddd1bda3ba75d3005/that_depends-1.17.0-py3-none-any.whl", hash = "sha256:df92e40edddd03259fd165af7f836e129bfe202d602fd67f923253a24ca0c8f4", size = 13474 },
+    { url = "https://files.pythonhosted.org/packages/1b/47/3ff64be7057c967ce0431ec7a62ec4eda8f8f74bf78b20a5c14ac2555cf0/that_depends-1.17.1-py3-none-any.whl", hash = "sha256:6b1f948b2dfe0037205b89045c884d938e2d331e421fbea5f2bee404371e60a7", size = 13594 },
 ]
 
 [[package]]
