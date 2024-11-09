@@ -6,27 +6,19 @@ from litestar import status_codes
 from litestar.contrib.pydantic import PydanticDTO
 from litestar.exceptions import HTTPException
 from sqlalchemy import orm
-from that_depends.providers import container_context
 
-from app import ioc, models, schemas
-
-
-if typing.TYPE_CHECKING:
-    from app.repositories import CardsService, DecksService
+from app import models, schemas
+from app.repositories import CardsService, DecksService
 
 
 @litestar.get("/decks/")
-@container_context()
-async def list_decks() -> schemas.Decks:
-    decks_service: DecksService = await ioc.IOCContainer.decks_service()
+async def list_decks(decks_service: DecksService) -> schemas.Decks:
     objects = await decks_service.list()
     return schemas.Decks(items=objects)  # type: ignore[arg-type]
 
 
 @litestar.get("/decks/{deck_id:int}/")
-@container_context()
-async def get_deck(deck_id: int) -> schemas.Deck:
-    decks_service: DecksService = await ioc.IOCContainer.decks_service()
+async def get_deck(deck_id: int, decks_service: DecksService) -> schemas.Deck:
     instance = await decks_service.get_one_or_none(
         models.Deck.id == deck_id,
         load=[orm.selectinload(models.Deck.cards)],
@@ -38,12 +30,11 @@ async def get_deck(deck_id: int) -> schemas.Deck:
 
 
 @litestar.put("/decks/{deck_id:int}/")
-@container_context()
 async def update_deck(
     deck_id: int,
     data: schemas.DeckCreate,
+    decks_service: DecksService,
 ) -> schemas.Deck:
-    decks_service: DecksService = await ioc.IOCContainer.decks_service()
     try:
         instance = await decks_service.update(data=data.model_dump(), item_id=deck_id)
     except NotFoundError:
@@ -52,25 +43,19 @@ async def update_deck(
 
 
 @litestar.post("/decks/")
-@container_context()
-async def create_deck(data: schemas.DeckCreate) -> schemas.Deck:
-    decks_service: DecksService = await ioc.IOCContainer.decks_service()
+async def create_deck(data: schemas.DeckCreate, decks_service: DecksService) -> schemas.Deck:
     instance = await decks_service.create(data)
     return schemas.Deck.model_validate(instance)
 
 
 @litestar.get("/decks/{deck_id:int}/cards/")
-@container_context()
-async def list_cards(deck_id: int) -> schemas.Cards:
-    cards_service: CardsService = await ioc.IOCContainer.cards_service()
+async def list_cards(deck_id: int, cards_service: CardsService) -> schemas.Cards:
     objects = await cards_service.list(models.Card.deck_id == deck_id)
     return schemas.Cards(items=objects)  # type: ignore[arg-type]
 
 
 @litestar.get("/cards/{card_id:int}/", return_dto=PydanticDTO[schemas.Card])
-@container_context()
-async def get_card(card_id: int) -> schemas.Card:
-    cards_service: CardsService = await ioc.IOCContainer.cards_service()
+async def get_card(card_id: int, cards_service: CardsService) -> schemas.Card:
     instance = await cards_service.get_one_or_none(models.Card.id == card_id)
     if not instance:
         raise HTTPException(status_code=status_codes.HTTP_404_NOT_FOUND, detail="Card is not found")
@@ -78,12 +63,7 @@ async def get_card(card_id: int) -> schemas.Card:
 
 
 @litestar.post("/decks/{deck_id:int}/cards/")
-@container_context()
-async def create_cards(
-    deck_id: int,
-    data: list[schemas.CardCreate],
-) -> schemas.Cards:
-    cards_service: CardsService = await ioc.IOCContainer.cards_service()
+async def create_cards(deck_id: int, data: list[schemas.CardCreate], cards_service: CardsService) -> schemas.Cards:
     objects = await cards_service.create_many(
         data=[models.Card(**card.model_dump(), deck_id=deck_id) for card in data],
     )
@@ -91,12 +71,7 @@ async def create_cards(
 
 
 @litestar.put("/decks/{deck_id:int}/cards/")
-@container_context()
-async def update_cards(
-    deck_id: int,
-    data: list[schemas.Card],
-) -> schemas.Cards:
-    cards_service: CardsService = await ioc.IOCContainer.cards_service()
+async def update_cards(deck_id: int, data: list[schemas.Card], cards_service: CardsService) -> schemas.Cards:
     objects = await cards_service.upsert_many(
         data=[models.Card(**card.model_dump(exclude={"deck_id"}), deck_id=deck_id) for card in data],
     )

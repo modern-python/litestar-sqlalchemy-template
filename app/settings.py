@@ -31,3 +31,6 @@ class Settings(pydantic_settings.BaseSettings):
             self.db_port,
             self.db_database,
         )
+
+
+settings = Settings()
