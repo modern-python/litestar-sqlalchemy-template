@@ -10,10 +10,10 @@ authors = [
 license = "MIT License"
 dependencies = [
     "litestar",
-    "advanced-alchemy",
+    "advanced-alchemy==0.22.1",
     "pydantic-settings",
     "granian",
-    "that-depends",
+    "modern-di-litestar",
     # database
     "alembic",
     "psycopg2",
@@ -21,8 +21,8 @@ dependencies = [
     "asyncpg",
 ]
 
-[tool.uv]
-dev-dependencies = [
+[dependency-groups]
+dev = [
     "polyfactory",
     "httpx",
     "pytest",
@@ -37,7 +37,7 @@ dev-dependencies = [
 fix = true
 unsafe-fixes = true
 line-length = 120
-target-version = "py311"
+target-version = "py312"
 extend-exclude = ["bin"]
 
 [tool.ruff.lint]
