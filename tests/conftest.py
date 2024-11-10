@@ -1,34 +1,30 @@
 import logging
 import typing
 
+import modern_di_litestar
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app import ioc
-from app.application import AppBuilder
+from app.application import application
 
 
 logger = logging.getLogger(__name__)
 
 
 @pytest.fixture
-def app_builder() -> AppBuilder:
-    return AppBuilder()
-
-
-@pytest.fixture
-async def client(app_builder: AppBuilder) -> typing.AsyncIterator[AsyncClient]:
+async def client() -> typing.AsyncIterator[AsyncClient]:
     async with AsyncClient(
-        transport=ASGITransport(app=app_builder.app),  # type: ignore[arg-type]
+        transport=ASGITransport(app=application),  # type: ignore[arg-type]
         base_url="http://test",
     ) as client:
         yield client
 
 
 @pytest.fixture(autouse=True)
-async def db_session(app_builder: AppBuilder) -> typing.AsyncIterator[AsyncSession]:
-    async with app_builder.di_container as di_container:
+async def db_session() -> typing.AsyncIterator[AsyncSession]:
+    async with modern_di_litestar.fetch_di_container(application) as di_container:
         engine = await ioc.Dependencies.database_engine.async_resolve(di_container)
         connection = await engine.connect()
         transaction = await connection.begin()
