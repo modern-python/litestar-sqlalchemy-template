@@ -2,7 +2,6 @@ import contextlib
 import typing
 
 import litestar
-import modern_di
 import modern_di_litestar
 from advanced_alchemy.exceptions import DuplicateKeyError
 from litestar.openapi import OpenAPIConfig
@@ -34,8 +33,7 @@ class AppBuilder:
                 render_plugins=[SwaggerRenderPlugin()],
             ),
         )
-        self.di_container = modern_di.Container(scope=modern_di.Scope.APP)
-        self.app.state.di_container = self.di_container
+        self.di_container = modern_di_litestar.setup_di(self.app)
 
     @contextlib.asynccontextmanager
     async def lifespan_manager(self, _: litestar.Litestar | None) -> typing.AsyncIterator[None]:
