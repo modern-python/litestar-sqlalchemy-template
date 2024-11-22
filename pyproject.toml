@@ -45,8 +45,6 @@ select = ["ALL"]
 ignore = [
     "D1", # allow missing docstrings
     "FBT", # allow boolean args
-    "ANN101", # missing-type-self
-    "ANN102", # missing-type-cls
     "INP", # ignore flake8-no-pep420
     "B008", # function-call-in-default-argument
     "ANN204", # no typings for __init__
