@@ -10,7 +10,7 @@ authors = [
 license = "MIT License"
 dependencies = [
     "litestar",
-    "advanced-alchemy==0.22.1",
+    "advanced-alchemy",
     "pydantic-settings",
     "granian",
     "modern-di-litestar",

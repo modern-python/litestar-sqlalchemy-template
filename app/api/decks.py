@@ -3,8 +3,8 @@ import typing
 import litestar
 from advanced_alchemy.exceptions import NotFoundError
 from litestar import status_codes
-from litestar.contrib.pydantic import PydanticDTO
 from litestar.exceptions import HTTPException
+from litestar.plugins.pydantic import PydanticDTO
 from sqlalchemy import orm
 
 from app import models, schemas
