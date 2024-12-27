@@ -3,7 +3,7 @@ name = "litestar-sqlalchemy-template"
 version = "0"
 description = "Async template on LiteStar and SQLAlchemy 2"
 readme = "README.md"
-requires-python = ">=3.12"
+requires-python = ">=3.13"
 authors = [
     { name = "Artur Shiriev", email = "me@shiriev.ru" },
 ]
@@ -17,7 +17,7 @@ dependencies = [
     # database
     "alembic",
     "psycopg2",
-    "sqlalchemy",
+    "sqlalchemy[asyncio]",
     "asyncpg",
 ]
 
@@ -37,7 +37,7 @@ dev = [
 fix = true
 unsafe-fixes = true
 line-length = 120
-target-version = "py312"
+target-version = "py313"
 extend-exclude = ["bin"]
 
 [tool.ruff.lint]
@@ -64,7 +64,7 @@ isort.no-lines-before = ["standard-library", "local-folder"]
 ]
 
 [tool.mypy]
-python_version = "3.12"
+python_version = "3.13"
 strict = true
 pretty = true
 
