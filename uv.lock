@@ -406,15 +406,15 @@ wheels = [
 
 [[package]]
 name = "modern-di-litestar"
-version = "0.4.2"
+version = "0.5.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "litestar" },
     { name = "modern-di" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/6f/4e/64a93d6450a1c81bc0597f7b515c3882785379ba7ac11773633bb2fca20d/modern_di_litestar-0.4.2.tar.gz", hash = "sha256:12a7a3b15f6fcf67e38a0e78e107a1d83d5c0088aea0f36ba1ea6833d6a882c4", size = 1994 }
+sdist = { url = "https://files.pythonhosted.org/packages/a8/a1/bdc73fe0fcbbfb1524a5728b1bf64e460bc0feb8650bd450f32b972e4723/modern_di_litestar-0.5.0.tar.gz", hash = "sha256:42412838cd019212dff69b8e97bf249a69ba4da0e6e13edb0df63c246e1ae990", size = 2017 }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/30/0c/32c8059be3ba55b6408f690e9dbaed887d074e60c10ba7efff1368a0e263/modern_di_litestar-0.4.2-py3-none-any.whl", hash = "sha256:89bff8c8efa1f9cb5e06bc061081c55e7d3fec57b0608cf6c40ebf91f18e0b6d", size = 2454 },
+    { url = "https://files.pythonhosted.org/packages/ce/e3/4650841d844f1484b0e9e7b6b356f847cff52fe0840f743284e28e2885d4/modern_di_litestar-0.5.0-py3-none-any.whl", hash = "sha256:d24169ada2eb0c11baf6bb176bb357fb599a9ee5628826f98a5678d4a5ad2c03", size = 2476 },
 ]
 
 [[package]]
