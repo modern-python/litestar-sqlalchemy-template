@@ -1,35 +1,53 @@
 import pydantic_settings
-from granian.log import LogLevels
-from sqlalchemy.engine.url import URL
+from lite_bootstrap import LitestarConfig
+from sqlalchemy.engine.url import URL, make_url
 
 
 class Settings(pydantic_settings.BaseSettings):
-    debug: bool = False
-    log_level: LogLevels = LogLevels.info
+    service_name: str = "FastAPI template"
+    service_version: str = "1.0.0"
+    service_environment: str = "local"
+    service_debug: bool = False
+    log_level: str = "info"
 
-    db_driver: str = "postgresql+asyncpg"
-    db_host: str = "db"
-    db_port: int = 5432
-    db_user: str = "postgres"
-    db_password: str = "password"
-    db_database: str = "postgres"
-
+    db_dsn: str = "postgresql+asyncpg://postgres:password@db/postgres"
     db_pool_size: int = 5
     db_max_overflow: int = 0
-    db_echo: bool = False
     db_pool_pre_ping: bool = True
 
     app_port: int = 8000
 
+    opentelemetry_endpoint: str = ""
+    sentry_dsn: str = ""
+    logging_buffer_capacity: int = 0
+    swagger_offline_docs: bool = True
+
+    cors_allowed_origins: list[str] = ["http://localhost:5173"]
+    cors_allowed_methods: list[str] = [""]
+    cors_allowed_headers: list[str] = [""]
+    cors_exposed_headers: list[str] = []
+
+    request_max_body_size: int = 1024 * 1024  # 1MB limit
+
     @property
-    def db_dsn(self) -> URL:
-        return URL.create(
-            self.db_driver,
-            self.db_user,
-            self.db_password,
-            self.db_host,
-            self.db_port,
-            self.db_database,
+    def db_dsn_parsed(self) -> URL:
+        return make_url(self.db_dsn)
+
+    @property
+    def api_bootstrapper_config(self) -> LitestarConfig:
+        return LitestarConfig(
+            service_name=settings.service_name,
+            service_version=settings.service_version,
+            service_environment=settings.service_environment,
+            service_debug=settings.service_debug,
+            opentelemetry_endpoint=settings.opentelemetry_endpoint,
+            sentry_dsn=settings.sentry_dsn,
+            cors_allowed_origins=settings.cors_allowed_origins,
+            cors_allowed_methods=settings.cors_allowed_methods,
+            cors_allowed_headers=settings.cors_allowed_headers,
+            cors_exposed_headers=settings.cors_exposed_headers,
+            logging_buffer_capacity=settings.logging_buffer_capacity,
+            swagger_offline_docs=settings.swagger_offline_docs,
         )
 
 
