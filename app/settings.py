@@ -4,7 +4,7 @@ from sqlalchemy.engine.url import URL, make_url
 
 
 class Settings(pydantic_settings.BaseSettings):
-    service_name: str = "FastAPI template"
+    service_name: str = "Litestar template"
     service_version: str = "1.0.0"
     service_environment: str = "local"
     service_debug: bool = False

@@ -1,0 +1,6 @@
+_commit: f3637c7
+_src_path: https://github.com/modern-python/modern-python-template
+framework: litestar
+project_description: Async template on Litestar and SQLAlchemy 2
+project_name: Litestar template
+project_slug: litestar-sqlalchemy-template

@@ -1,7 +1,7 @@
 [project]
-name = "fastapi-sqlalchemy-template"
+name = "litestar-sqlalchemy-template"
 version = "0"
-description = "Async template on FastAPI and SQLAlchemy 2"
+description = "Async template on Litestar and SQLAlchemy 2"
 readme = "README.md"
 requires-python = ">=3.13"
 authors = [

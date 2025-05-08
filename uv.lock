@@ -208,67 +208,6 @@ wheels = [
 ]
 
 [[package]]
-name = "fastapi-sqlalchemy-template"
-version = "0"
-source = { virtual = "." }
-dependencies = [
-    { name = "advanced-alchemy" },
-    { name = "alembic" },
-    { name = "asyncpg" },
-    { name = "granian", extra = ["uvloop"] },
-    { name = "lite-bootstrap", extra = ["litestar-all"] },
-    { name = "litestar" },
-    { name = "modern-di-litestar" },
-    { name = "opentelemetry-instrumentation-asyncpg" },
-    { name = "opentelemetry-instrumentation-sqlalchemy" },
-    { name = "psycopg2" },
-    { name = "pydantic-settings" },
-    { name = "sqlalchemy", extra = ["asyncio"] },
-]
-
-[package.dev-dependencies]
-dev = [
-    { name = "asgi-lifespan" },
-    { name = "asyncpg-stubs" },
-    { name = "httpx" },
-    { name = "mypy" },
-    { name = "polyfactory" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "ruff" },
-]
-
-[package.metadata]
-requires-dist = [
-    { name = "advanced-alchemy" },
-    { name = "alembic" },
-    { name = "asyncpg" },
-    { name = "granian", extras = ["uvloop"] },
-    { name = "lite-bootstrap", extras = ["litestar-all"] },
-    { name = "litestar" },
-    { name = "modern-di-litestar" },
-    { name = "opentelemetry-instrumentation-asyncpg" },
-    { name = "opentelemetry-instrumentation-sqlalchemy" },
-    { name = "psycopg2" },
-    { name = "pydantic-settings" },
-    { name = "sqlalchemy", extras = ["asyncio"] },
-]
-
-[package.metadata.requires-dev]
-dev = [
-    { name = "asgi-lifespan" },
-    { name = "asyncpg-stubs" },
-    { name = "httpx" },
-    { name = "mypy" },
-    { name = "polyfactory" },
-    { name = "pytest" },
-    { name = "pytest-asyncio" },
-    { name = "pytest-cov" },
-    { name = "ruff" },
-]
-
-[[package]]
 name = "googleapis-common-protos"
 version = "1.70.0"
 source = { registry = "https://pypi.org/simple" }
@@ -476,6 +415,67 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/c9/0c/06ab03ee497d207dd8cb7588d1940be0b373a8ffdc7be3ec6d7e91c17ae2/litestar_htmx-0.4.1.tar.gz", hash = "sha256:ba2537008eb8cc18bfc8bee5cecb280924c7818bb1c066d79eae4b221696ca08", size = 101877 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/9d/99/3ea64a79a2f4fea5225ccd0128201a3b8eab5e216b8fba8b778b8c462f29/litestar_htmx-0.4.1-py3-none-any.whl", hash = "sha256:ba2a8ff1e210f21980735b9cde13d239a2b7c3627cb4aeb425d66f4a314d1a59", size = 9970 },
+]
+
+[[package]]
+name = "litestar-sqlalchemy-template"
+version = "0"
+source = { virtual = "." }
+dependencies = [
+    { name = "advanced-alchemy" },
+    { name = "alembic" },
+    { name = "asyncpg" },
+    { name = "granian", extra = ["uvloop"] },
+    { name = "lite-bootstrap", extra = ["litestar-all"] },
+    { name = "litestar" },
+    { name = "modern-di-litestar" },
+    { name = "opentelemetry-instrumentation-asyncpg" },
+    { name = "opentelemetry-instrumentation-sqlalchemy" },
+    { name = "psycopg2" },
+    { name = "pydantic-settings" },
+    { name = "sqlalchemy", extra = ["asyncio"] },
+]
+
+[package.dev-dependencies]
+dev = [
+    { name = "asgi-lifespan" },
+    { name = "asyncpg-stubs" },
+    { name = "httpx" },
+    { name = "mypy" },
+    { name = "polyfactory" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+    { name = "ruff" },
+]
+
+[package.metadata]
+requires-dist = [
+    { name = "advanced-alchemy" },
+    { name = "alembic" },
+    { name = "asyncpg" },
+    { name = "granian", extras = ["uvloop"] },
+    { name = "lite-bootstrap", extras = ["litestar-all"] },
+    { name = "litestar" },
+    { name = "modern-di-litestar" },
+    { name = "opentelemetry-instrumentation-asyncpg" },
+    { name = "opentelemetry-instrumentation-sqlalchemy" },
+    { name = "psycopg2" },
+    { name = "pydantic-settings" },
+    { name = "sqlalchemy", extras = ["asyncio"] },
+]
+
+[package.metadata.requires-dev]
+dev = [
+    { name = "asgi-lifespan" },
+    { name = "asyncpg-stubs" },
+    { name = "httpx" },
+    { name = "mypy" },
+    { name = "polyfactory" },
+    { name = "pytest" },
+    { name = "pytest-asyncio" },
+    { name = "pytest-cov" },
+    { name = "ruff" },
 ]
 
 [[package]]
