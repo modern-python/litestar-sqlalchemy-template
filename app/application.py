@@ -35,6 +35,3 @@ def build_app() -> litestar.Litestar:
     )
     bootstrapper = LitestarBootstrapper(bootstrap_config=bootstrap_config)
     return bootstrapper.bootstrap()
-
-
-application = build_app()

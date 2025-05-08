@@ -17,8 +17,6 @@ class CardCreate(CardBase):
 
 
 class Card(CardBase):
-    model_config = pydantic.ConfigDict(from_attributes=True)
-
     id: PositiveInt
     deck_id: PositiveInt | None = None
 
@@ -37,8 +35,6 @@ class DeckCreate(DeckBase):
 
 
 class Deck(DeckBase):
-    model_config = pydantic.ConfigDict(from_attributes=True)
-
     id: PositiveInt
     cards: list[Card] | None
 

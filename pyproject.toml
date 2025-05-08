@@ -1,7 +1,7 @@
 [project]
-name = "litestar-sqlalchemy-template"
+name = "fastapi-sqlalchemy-template"
 version = "0"
-description = "Async template on LiteStar and SQLAlchemy 2"
+description = "Async template on FastAPI and SQLAlchemy 2"
 readme = "README.md"
 requires-python = ">=3.13"
 authors = [
@@ -11,10 +11,10 @@ license = "MIT License"
 dependencies = [
     "litestar",
     "lite-bootstrap[litestar-all]",
+    "modern-di-litestar",
     "advanced-alchemy",
     "pydantic-settings",
-    "granian",
-    "modern-di-litestar",
+    "granian[uvloop]",
     # database
     "alembic",
     "psycopg2",
@@ -32,6 +32,7 @@ dev = [
     "pytest",
     "pytest-cov",
     "pytest-asyncio",
+    "asgi_lifespan",
     "ruff",
     "mypy",
     "asyncpg-stubs",
