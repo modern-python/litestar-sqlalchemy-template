@@ -5,14 +5,20 @@ from app import models, schemas
 
 
 class DeckModelFactory(SQLAlchemyFactory[models.Deck]):
-    __model__ = models.Deck
+    __check_model__ = False
+    __set_relationships__ = False
+    __set_association_proxy__ = False
     id = None
 
 
 class CardModelFactory(SQLAlchemyFactory[models.Card]):
-    __model__ = models.Card
+    __check_model__ = False
+    __set_relationships__ = False
+    __set_association_proxy__ = False
     id = None
 
 
 class CardCreateSchemaFactory(ModelFactory[schemas.CardCreate]):
-    __model__ = schemas.CardCreate
+    __check_model__ = False
+    __set_relationships__ = False
+    __set_association_proxy__ = False
