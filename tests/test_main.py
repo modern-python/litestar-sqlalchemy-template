@@ -14,7 +14,7 @@ def test_main(monkeypatch: pytest.MonkeyPatch) -> None:
 
 async def test_session() -> None:
     async with (
-        modern_di.Container(scope=modern_di.Scope.APP) as container,
+        modern_di.AsyncContainer() as container,
         container.build_child_container(scope=modern_di.Scope.REQUEST) as request_container,
     ):
-        await ioc.Dependencies.session.async_resolve(request_container)
+        await request_container.resolve_provider(ioc.Dependencies.session)
