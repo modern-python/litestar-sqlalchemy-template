@@ -1,8 +1,11 @@
 import typing
 
 import litestar
-from advanced_alchemy.exceptions import DuplicateKeyError
 from litestar import status_codes
+
+
+if typing.TYPE_CHECKING:
+    from advanced_alchemy.exceptions import DuplicateKeyError
 
 
 def duplicate_key_error_handler(_: object, exc: DuplicateKeyError) -> litestar.Response[dict[str, typing.Any]]:
