@@ -3,7 +3,7 @@ name = "litestar-sqlalchemy-template"
 version = "0"
 description = "Async template on Litestar and SQLAlchemy 2"
 readme = "README.md"
-requires-python = ">=3.13"
+requires-python = ">=3.14"
 authors = [
     { name = "Artur Shiriev", email = "me@shiriev.ru" },
 ]
@@ -11,7 +11,7 @@ license = "MIT License"
 dependencies = [
     "litestar",
     "lite-bootstrap[litestar-all]",
-    "modern-di-litestar>=1",
+    "modern-di-litestar>=2",
     "advanced-alchemy",
     "pydantic-settings",
     "granian[uvloop]",
@@ -45,7 +45,7 @@ lint = [
 fix = true
 unsafe-fixes = true
 line-length = 120
-target-version = "py313"
+target-version = "py314"
 extend-exclude = ["bin"]
 
 [tool.ruff.lint]
@@ -72,7 +72,7 @@ isort.no-lines-before = ["standard-library", "local-folder"]
 ]
 
 [tool.mypy]
-python_version = "3.13"
+python_version = "3.14"
 strict = true
 pretty = true
 

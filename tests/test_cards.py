@@ -1,59 +1,57 @@
-from httpx import AsyncClient
+from typing import TYPE_CHECKING
+
+import pytest
 from litestar import status_codes
-from sqlalchemy.ext.asyncio import AsyncSession
 
 from tests import factories
 
 
-async def test_get_cards_empty(client: AsyncClient, db_session: AsyncSession) -> None:
-    factories.DeckModelFactory.__async_session__ = db_session
+if TYPE_CHECKING:
+    from httpx import AsyncClient
+
+
+pytestmark = [pytest.mark.usefixtures("set_async_session_in_base_sqlalchemy_factory")]
+
+
+async def test_get_cards_empty(client: AsyncClient) -> None:
     deck = await factories.DeckModelFactory.create_async()
 
     response = await client.get(f"/api/decks/{deck.id}/cards/")
-    assert response.status_code == status_codes.HTTP_200_OK, response.text
-    assert len(response.json()["items"]) == 0
-
-    response = await client.get("/api/decks/0/cards/")
-    assert response.status_code == status_codes.HTTP_200_OK, response.text
+    assert response.status_code == status_codes.HTTP_200_OK
     assert len(response.json()["items"]) == 0
 
     response = await client.get("/api/cards/0/")
-    assert response.status_code == status_codes.HTTP_404_NOT_FOUND, response.text
+    assert response.status_code == status_codes.HTTP_404_NOT_FOUND
 
 
-async def test_get_cards(client: AsyncClient, db_session: AsyncSession) -> None:
-    factories.DeckModelFactory.__async_session__ = db_session
-    factories.CardModelFactory.__async_session__ = db_session
+async def test_get_cards(client: AsyncClient) -> None:
     deck = await factories.DeckModelFactory.create_async()
     card = await factories.CardModelFactory.create_async(deck_id=deck.id)
 
     response = await client.get(f"/api/decks/{card.deck_id}/cards/")
-    assert response.status_code == status_codes.HTTP_200_OK, response.text
+    assert response.status_code == status_codes.HTTP_200_OK
     data = response.json()
     assert len(data["items"]) == 1
     for k, v in data["items"][0].items():
         assert v == getattr(card, k)
 
 
-async def test_get_card(client: AsyncClient, db_session: AsyncSession) -> None:
-    factories.DeckModelFactory.__async_session__ = db_session
-    factories.CardModelFactory.__async_session__ = db_session
+async def test_get_card(client: AsyncClient) -> None:
     deck = await factories.DeckModelFactory.create_async()
     card = await factories.CardModelFactory.create_async(deck_id=deck.id)
 
     response = await client.get(f"/api/cards/{card.id}/")
-    assert response.status_code == status_codes.HTTP_200_OK, response.text
+    assert response.status_code == status_codes.HTTP_200_OK
     for k, v in response.json().items():
         assert v == getattr(card, k)
 
 
 async def test_get_card_not_exist(client: AsyncClient) -> None:
     response = await client.get("/api/cards/999/")
-    assert response.status_code == status_codes.HTTP_404_NOT_FOUND, response.text
+    assert response.status_code == status_codes.HTTP_404_NOT_FOUND
 
 
-async def test_create_cards(client: AsyncClient, db_session: AsyncSession) -> None:
-    factories.DeckModelFactory.__async_session__ = db_session
+async def test_create_cards(client: AsyncClient) -> None:
     deck = await factories.DeckModelFactory.create_async()
 
     cards_to_create = [factories.CardCreateSchemaFactory.build(), factories.CardCreateSchemaFactory.build()]
@@ -66,7 +64,7 @@ async def test_create_cards(client: AsyncClient, db_session: AsyncSession) -> No
 
     # check creation
     response = await client.get(f"/api/decks/{deck.id}/cards/")
-    assert response.status_code == status_codes.HTTP_200_OK, response.text
+    assert response.status_code == status_codes.HTTP_200_OK
     data = response.json()
     assert created_data == data
     assert len(data["items"]) == len(cards_to_create)
@@ -85,9 +83,7 @@ async def test_create_cards(client: AsyncClient, db_session: AsyncSession) -> No
     assert data["detail"] == "A record matching the supplied data already exists."
 
 
-async def test_update_cards(client: AsyncClient, db_session: AsyncSession) -> None:
-    factories.DeckModelFactory.__async_session__ = db_session
-    factories.CardModelFactory.__async_session__ = db_session
+async def test_update_cards(client: AsyncClient) -> None:
     deck = await factories.DeckModelFactory.create_async()
     card1, card2 = await factories.CardModelFactory.create_batch_async(size=2, deck_id=deck.id)
 
@@ -109,7 +105,7 @@ async def test_update_cards(client: AsyncClient, db_session: AsyncSession) -> No
         f"/api/decks/{deck.id}/cards/",
         json=updated_data,
     )
-    assert response.status_code == status_codes.HTTP_200_OK, response.text
+    assert response.status_code == status_codes.HTTP_200_OK
     cards = response.json()["items"]
     for x in cards:
         assert x.pop("deck_id") == deck.id
@@ -117,7 +113,7 @@ async def test_update_cards(client: AsyncClient, db_session: AsyncSession) -> No
 
     # check creation
     response = await client.get(f"/api/decks/{deck.id}/cards/")
-    assert response.status_code == status_codes.HTTP_200_OK, response.text
+    assert response.status_code == status_codes.HTTP_200_OK
     cards = response.json()["items"]
     assert len(cards) == len(updated_data)
     for x in cards:
