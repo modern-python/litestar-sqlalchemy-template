@@ -36,9 +36,8 @@ dev = [
 ]
 lint = [
     "ruff",
-    "mypy",
+    "ty",
     "eof-fixer",
-    "asyncpg-stubs",
 ]
 
 [tool.ruff]
