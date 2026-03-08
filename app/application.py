@@ -23,7 +23,7 @@ def build_app() -> litestar.Litestar:
     bootstrap_config = dataclasses.replace(
         settings.api_bootstrapper_config,
         application_config=AppConfig(
-            exception_handlers={
+            exception_handlers={  # type: ignore[invalid-argument-type]
                 DuplicateKeyError: exceptions.duplicate_key_error_handler,
             },
             route_handlers=[ROUTER],
@@ -36,7 +36,7 @@ def build_app() -> litestar.Litestar:
         ),
         opentelemetry_instrumentors=[
             SQLAlchemyInstrumentor(),
-            AsyncPGInstrumentor(capture_parameters=True),  # type: ignore[no-untyped-call]
+            AsyncPGInstrumentor(capture_parameters=True),
         ],
     )
     bootstrapper = LitestarBootstrapper(bootstrap_config=bootstrap_config)
