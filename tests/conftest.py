@@ -20,14 +20,14 @@ if typing.TYPE_CHECKING:
 @pytest.fixture
 async def app() -> typing.AsyncIterator[litestar.Litestar]:
     app_ = build_app()
-    async with LifespanManager(app_):  # type: ignore[arg-type]
+    async with LifespanManager(app_):  # ty: ignore[invalid-argument-type]
         yield app_
 
 
 @pytest.fixture
 async def client(app: litestar.Litestar) -> typing.AsyncIterator[AsyncClient]:
     async with AsyncClient(
-        transport=ASGITransport(app=app),  # type: ignore[arg-type]
+        transport=ASGITransport(app=app),  # ty: ignore[invalid-argument-type]
         base_url="http://test",
     ) as client:
         yield client

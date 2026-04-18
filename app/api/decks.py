@@ -14,7 +14,7 @@ from app.repositories import CardsRepository, DecksRepository  # noqa: TC001
 @litestar.get("/decks/")
 async def list_decks(decks_repository: DecksRepository) -> schemas.Decks:
     objects = await decks_repository.list()
-    return schemas.Decks(items=objects)  # type: ignore[arg-type]
+    return schemas.Decks(items=objects)  # ty: ignore[invalid-argument-type]
 
 
 @litestar.get("/decks/{deck_id:int}/")
@@ -51,7 +51,7 @@ async def create_deck(data: schemas.DeckCreate, decks_repository: DecksRepositor
 @litestar.get("/decks/{deck_id:int}/cards/")
 async def list_cards(deck_id: int, cards_repository: CardsRepository) -> schemas.Cards:
     objects = await cards_repository.list(models.Card.deck_id == deck_id)
-    return schemas.Cards(items=objects)  # type: ignore[arg-type]
+    return schemas.Cards(items=objects)  # ty: ignore[invalid-argument-type]
 
 
 @litestar.get("/cards/{card_id:int}/", return_dto=PydanticDTO[schemas.Card])
@@ -69,7 +69,7 @@ async def create_cards(
     objects = await cards_repository.create_many(
         data=[models.Card(**card.model_dump(), deck_id=deck_id) for card in data],
     )
-    return schemas.Cards(items=objects)  # type: ignore[arg-type]
+    return schemas.Cards(items=objects)  # ty: ignore[invalid-argument-type]
 
 
 @litestar.put("/decks/{deck_id:int}/cards/")
@@ -77,7 +77,7 @@ async def update_cards(deck_id: int, data: list[schemas.Card], cards_repository:
     objects = await cards_repository.upsert_many(
         data=[models.Card(**card.model_dump(exclude={"deck_id"}), deck_id=deck_id) for card in data],
     )
-    return schemas.Cards(items=objects)  # type: ignore[arg-type]
+    return schemas.Cards(items=objects)  # ty: ignore[invalid-argument-type]
 
 
 ROUTER: typing.Final = litestar.Router(
