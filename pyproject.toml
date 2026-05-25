@@ -85,3 +85,4 @@ exclude_also = [
 
 [tool.coverage.run]
 concurrency = ["thread", "greenlet"]
+disable_warnings = ["couldnt-parse"]
