@@ -1,9 +1,13 @@
-## Async template on LiteStar and SQLAlchemy 2
+# litestar-sqlalchemy-template
 
-[![Test Coverage](https://codecov.io/gh/modern-python/litestar-sqlalchemy-template/branch/main/graph/badge.svg)](https://codecov.io/gh/modern-python/litestar-sqlalchemy-template)
-[![GitHub issues](https://img.shields.io/github/issues/modern-python/litestar-sqlalchemy-template)](https://github.com/modern-python/litestar-sqlalchemy-template/issues)
-[![GitHub forks](https://img.shields.io/github/forks/modern-python/litestar-sqlalchemy-template)](https://github.com/modern-python/litestar-sqlalchemy-template/network)
+[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)](https://github.com/modern-python/litestar-sqlalchemy-template/actions/workflows/main.yml)
+[![CI](https://github.com/modern-python/litestar-sqlalchemy-template/actions/workflows/main.yml/badge.svg)](https://github.com/modern-python/litestar-sqlalchemy-template/actions/workflows/main.yml)
+[![License](https://img.shields.io/github/license/modern-python/litestar-sqlalchemy-template.svg)](https://github.com/modern-python/litestar-sqlalchemy-template/blob/main/LICENSE)
 [![GitHub stars](https://img.shields.io/github/stars/modern-python/litestar-sqlalchemy-template)](https://github.com/modern-python/litestar-sqlalchemy-template/stargazers)
+[![Context7](https://img.shields.io/badge/Context7-docs-blue)](https://context7.com/modern-python/litestar-sqlalchemy-template)
+[![uv](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/uv/main/assets/badge/v0.json)](https://github.com/astral-sh/uv)
+[![Ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+[![ty](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ty/main/assets/badge/v0.json)](https://github.com/astral-sh/ty)
 
 ### Description
 Production-ready dockerized async REST API on LiteStar with SQLAlchemy and PostgreSQL
@@ -22,8 +26,9 @@ You can clone this project or use [this template](https://github.com/modern-pyth
 just --list
 ```
 
+## 📝 [License](LICENSE)
+
 ## Part of `modern-python`
 
 Browse the full list of templates and libraries in
-[`modern-python`](https://github.com/modern-python) — see the org profile for the
-categorized index.
+[`modern-python`](https://github.com/modern-python) — see the org profile for the categorized index.
