@@ -4,17 +4,15 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Commands
 
-All development runs through Docker Compose via `just` (see `Justfile`). The app and Postgres come up together; running tests/migrations outside Docker is not the supported path.
+Recipes live in the `Justfile` — run `just --list` to see them; this section only covers what isn't obvious from the recipe names.
 
-- `just` — full pipeline: install, lint, build, test
-- `just run` — start the API (runs `alembic upgrade head` then `python -m app`); exposed on `:8000`
-- `just test [pytest-args]` — downgrades DB to `base`, upgrades to `head`, then runs pytest. Wraps with `down` before and after. Pass through args, e.g. `just test tests/test_decks.py::test_create -k pattern -x`
-- `just migration -m "message"` — autogenerate an Alembic revision against an up-to-date DB
-- `just lint` — `eof-fixer`, `ruff format`, `ruff check --fix`, then `ty check` (this project uses `ty`, not mypy — suppress with `# ty: ignore[<rule>]`)
-- `just build` / `just down` / `just sh` — build image / tear down stack / shell into the app container
-- `just install` — `uv lock --upgrade` + `uv sync --all-extras --all-groups --frozen`
+Almost everything runs through Docker Compose: the app and Postgres come up together, and running tests/migrations outside Docker is **not** the supported path (`just install` and `just lint` are the exceptions — they run on the host). Inside the container, raw commands look like `uv run pytest ...`, `uv run alembic ...`.
 
-Python is 3.14, dependencies managed by `uv`. Inside the container, raw commands look like `uv run pytest ...`, `uv run alembic ...`.
+- `just test` cycles the DB (downgrade to `base`, upgrade to `head`) before pytest and tears the stack down before and after. Pass pytest args through, e.g. `just test tests/test_decks.py::test_create -k pattern -x`.
+- `just migration -m "message"` autogenerates an Alembic revision **against an already-upgraded DB** — the recipe enforces this, so don't run autogen by hand.
+- `just lint` runs `eof-fixer`, `ruff format`, `ruff check --fix`, then `ty check` — this project uses `ty`, not mypy; suppress with `# ty: ignore[<rule>]`.
+
+Python is 3.14, dependencies managed by `uv`. The API is exposed on `:8000`.
 
 ## Architecture
 
