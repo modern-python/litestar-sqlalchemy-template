@@ -14,9 +14,9 @@ async def list_decks(decks_repository: DecksRepository) -> schemas.Decks:
 
 
 @litestar.get("/decks/{deck_id:int}/")
-async def get_deck(deck_id: FromPath[int], decks_repository: DecksRepository) -> schemas.Deck:
+async def get_deck(deck_id: FromPath[int], decks_repository: DecksRepository) -> schemas.DeckWithCards:
     instance = await decks_repository.fetch_with_cards(deck_id)
-    return schemas.Deck.model_validate(instance)
+    return schemas.DeckWithCards.model_validate(instance)
 
 
 @litestar.put("/decks/{deck_id:int}/")
