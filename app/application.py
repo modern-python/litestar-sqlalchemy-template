@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 import modern_di
 import modern_di_litestar
-from advanced_alchemy.exceptions import DuplicateKeyError
+from advanced_alchemy.exceptions import DuplicateKeyError, NotFoundError
 from lite_bootstrap import LitestarBootstrapper
 from litestar.config.app import AppConfig
 from opentelemetry.instrumentation.asyncpg import AsyncPGInstrumentor
@@ -25,6 +25,7 @@ def build_app() -> litestar.Litestar:
         application_config=AppConfig(
             exception_handlers={  # ty: ignore[invalid-argument-type]
                 DuplicateKeyError: exceptions.duplicate_key_error_handler,
+                NotFoundError: exceptions.not_found_error_handler,
             },
             route_handlers=[ROUTER],
             plugins=[modern_di_litestar.ModernDIPlugin(di_container)],
