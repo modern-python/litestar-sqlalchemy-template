@@ -1,9 +1,6 @@
 import typing
 
 import litestar
-from advanced_alchemy.exceptions import NotFoundError
-from litestar import status_codes
-from litestar.exceptions import HTTPException
 from litestar.params import FromPath  # noqa: TC002
 from litestar.plugins.pydantic import PydanticDTO
 
@@ -20,9 +17,6 @@ async def list_decks(decks_repository: DecksRepository) -> schemas.Decks:
 @litestar.get("/decks/{deck_id:int}/")
 async def get_deck(deck_id: FromPath[int], decks_repository: DecksRepository) -> schemas.Deck:
     instance = await decks_repository.fetch_with_cards(deck_id)
-    if not instance:
-        raise HTTPException(status_code=status_codes.HTTP_404_NOT_FOUND, detail="Deck is not found")
-
     return schemas.Deck.model_validate(instance)
 
 
@@ -32,10 +26,7 @@ async def update_deck(
     data: schemas.DeckCreate,
     decks_repository: DecksRepository,
 ) -> schemas.Deck:
-    try:
-        instance = await decks_repository.update(data=data.model_dump(), item_id=deck_id)
-    except NotFoundError:
-        raise HTTPException(status_code=status_codes.HTTP_404_NOT_FOUND, detail="Deck is not found") from None
+    instance = await decks_repository.update(data=data.model_dump(), item_id=deck_id)
     return schemas.Deck.model_validate(instance)
 
 
@@ -53,9 +44,7 @@ async def list_cards(deck_id: FromPath[int], cards_repository: CardsRepository) 
 
 @litestar.get("/cards/{card_id:int}/", return_dto=PydanticDTO[schemas.Card])
 async def get_card(card_id: FromPath[int], cards_repository: CardsRepository) -> schemas.Card:
-    instance = await cards_repository.get_one_or_none(models.Card.id == card_id)
-    if not instance:
-        raise HTTPException(status_code=status_codes.HTTP_404_NOT_FOUND, detail="Card is not found")
+    instance = await cards_repository.get_one(models.Card.id == card_id)
     return schemas.Card.model_validate(instance)
 
 
