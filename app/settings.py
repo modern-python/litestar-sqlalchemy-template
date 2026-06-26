@@ -37,18 +37,18 @@ class Settings(pydantic_settings.BaseSettings):
     @property
     def api_bootstrapper_config(self) -> LitestarConfig:
         return LitestarConfig(
-            service_name=settings.service_name,
-            service_version=settings.service_version,
-            service_environment=settings.service_environment,
-            service_debug=settings.service_debug,
-            opentelemetry_endpoint=settings.opentelemetry_endpoint,
-            sentry_dsn=settings.sentry_dsn,
-            cors_allowed_origins=settings.cors_allowed_origins,
-            cors_allowed_methods=settings.cors_allowed_methods,
-            cors_allowed_headers=settings.cors_allowed_headers,
-            cors_exposed_headers=settings.cors_exposed_headers,
-            logging_buffer_capacity=settings.logging_buffer_capacity,
-            swagger_offline_docs=settings.swagger_offline_docs,
+            service_name=self.service_name,
+            service_version=self.service_version,
+            service_environment=self.service_environment,
+            service_debug=self.service_debug,
+            opentelemetry_endpoint=self.opentelemetry_endpoint,
+            sentry_dsn=self.sentry_dsn,
+            cors_allowed_origins=self.cors_allowed_origins,
+            cors_allowed_methods=self.cors_allowed_methods,
+            cors_allowed_headers=self.cors_allowed_headers,
+            cors_exposed_headers=self.cors_exposed_headers,
+            logging_buffer_capacity=self.logging_buffer_capacity,
+            swagger_offline_docs=self.swagger_offline_docs,
         )
 
 
