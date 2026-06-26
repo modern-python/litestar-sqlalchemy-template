@@ -10,7 +10,7 @@ from opentelemetry.instrumentation.asyncpg import AsyncPGInstrumentor
 from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 
 from app import exceptions, ioc, repositories
-from app.api.decks import ROUTER
+from app.api import cards, decks
 from app.settings import settings
 
 
@@ -27,7 +27,7 @@ def build_app() -> litestar.Litestar:
                 DuplicateKeyError: exceptions.duplicate_key_error_handler,
                 NotFoundError: exceptions.not_found_error_handler,
             },
-            route_handlers=[ROUTER],
+            route_handlers=[decks.ROUTER, cards.ROUTER],
             plugins=[modern_di_litestar.ModernDIPlugin(di_container)],
             dependencies={
                 "decks_repository": modern_di_litestar.FromDI(repositories.DecksRepository),
