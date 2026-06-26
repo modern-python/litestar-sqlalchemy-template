@@ -6,7 +6,6 @@ from litestar import status_codes
 from litestar.exceptions import HTTPException
 from litestar.params import FromPath  # noqa: TC002
 from litestar.plugins.pydantic import PydanticDTO
-from sqlalchemy import orm
 
 from app import models, schemas
 from app.repositories import CardsRepository, DecksRepository  # noqa: TC001
@@ -20,10 +19,7 @@ async def list_decks(decks_repository: DecksRepository) -> schemas.Decks:
 
 @litestar.get("/decks/{deck_id:int}/")
 async def get_deck(deck_id: FromPath[int], decks_repository: DecksRepository) -> schemas.Deck:
-    instance = await decks_repository.get_one_or_none(
-        models.Deck.id == deck_id,
-        load=[orm.selectinload(models.Deck.cards)],
-    )
+    instance = await decks_repository.fetch_with_cards(deck_id)
     if not instance:
         raise HTTPException(status_code=status_codes.HTTP_404_NOT_FOUND, detail="Deck is not found")
 
@@ -51,7 +47,7 @@ async def create_deck(data: schemas.DeckCreate, decks_repository: DecksRepositor
 
 @litestar.get("/decks/{deck_id:int}/cards/")
 async def list_cards(deck_id: FromPath[int], cards_repository: CardsRepository) -> schemas.Cards:
-    objects = await cards_repository.get_many(models.Card.deck_id == deck_id)
+    objects = await cards_repository.list_for_deck(deck_id)
     return schemas.Cards(items=objects)  # ty: ignore[invalid-argument-type]
 
 
@@ -67,9 +63,7 @@ async def get_card(card_id: FromPath[int], cards_repository: CardsRepository) ->
 async def create_cards(
     deck_id: FromPath[int], data: list[schemas.CardCreate], cards_repository: CardsRepository
 ) -> schemas.Cards:
-    objects = await cards_repository.create_many(
-        data=[models.Card(**card.model_dump(), deck_id=deck_id) for card in data],
-    )
+    objects = await cards_repository.add_cards(deck_id, data)
     return schemas.Cards(items=objects)  # ty: ignore[invalid-argument-type]
 
 
@@ -77,9 +71,7 @@ async def create_cards(
 async def update_cards(
     deck_id: FromPath[int], data: list[schemas.Card], cards_repository: CardsRepository
 ) -> schemas.Cards:
-    objects = await cards_repository.upsert_many(
-        data=[models.Card(**card.model_dump(exclude={"deck_id"}), deck_id=deck_id) for card in data],
-    )
+    objects = await cards_repository.upsert_cards(deck_id, data)
     return schemas.Cards(items=objects)  # ty: ignore[invalid-argument-type]
 
 
