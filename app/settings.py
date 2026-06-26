@@ -24,8 +24,8 @@ class Settings(pydantic_settings.BaseSettings):
     swagger_offline_docs: bool = True
 
     cors_allowed_origins: list[str] = ["http://localhost:5173"]
-    cors_allowed_methods: list[str] = [""]
-    cors_allowed_headers: list[str] = [""]
+    cors_allowed_methods: list[str] = ["*"]
+    cors_allowed_headers: list[str] = ["*"]
     cors_exposed_headers: list[str] = []
 
     request_max_body_size: int = 1024 * 1024  # 1MB limit
