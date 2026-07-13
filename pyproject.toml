@@ -1,7 +1,7 @@
 [project]
 name = "litestar-sqlalchemy-template"
 version = "0"
-description = "Async template on Litestar and SQLAlchemy 2"
+description = "Dockerized Litestar + SQLAlchemy 2 + PostgreSQL app template with DI"
 readme = "README.md"
 requires-python = ">=3.14"
 authors = [
