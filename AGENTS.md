@@ -10,7 +10,7 @@ Almost everything runs through Docker Compose: the app and Postgres come up toge
 
 - `just test` cycles the DB (downgrade to `base`, upgrade to `head`) before pytest and tears the stack down before and after. Pass pytest args through, e.g. `just test tests/test_decks.py::test_create -k pattern -x`.
 - `just migration -m "message"` autogenerates an Alembic revision **against an already-upgraded DB** — the recipe enforces this, so don't run autogen by hand.
-- `just lint` runs `eof-fixer`, `ruff format`, `ruff check --fix`, then `ty check` — this project uses `ty`, not mypy; suppress with `# ty: ignore[<rule>]`.
+- `just lint` runs `eof-fixer`, `ruff format`, `ruff check --fix`, then `ty check`.
 
 Python is 3.14, dependencies managed by `uv`. The API is exposed on `:8000`.
 
@@ -39,4 +39,4 @@ Python is 3.14, dependencies managed by `uv`. The API is exposed on `:8000`.
 - Pydantic schemas in `app/schemas.py` use `from_attributes=True` (via `Base`) so they validate directly from ORM instances (`schemas.X.model_validate(orm_instance)`). Collection responses go through `Collection[T].from_models(...)` (e.g. `schemas.Decks`, `schemas.Cards`).
 - Deck responses are deliberately two-shaped: `list_decks`/`create_deck`/`update_deck` return the light `schemas.Deck` (no `cards`), while `get_deck` returns `schemas.DeckWithCards`. The split mirrors loading — lists use `noload` (no cards query), detail uses `selectinload` via `fetch_with_cards` — so the type states exactly what each endpoint loads.
 - Domain exceptions: register handlers in `application.build_app`'s `exception_handlers` dict (see `DuplicateKeyError` → `exceptions.duplicate_key_error_handler`). For per-handler 404s the code raises `litestar.exceptions.HTTPException` directly.
-- `ruff` is configured with `select = ["ALL"]` and a line length of 120 — expect strict lint. Type-check with `ty`; use `# ty: ignore[<rule>]` for suppressions (already used for `invalid-argument-type` around `LifespanManager` / `ASGITransport` / DTO list construction).
+- `ruff` is configured with `select = ["ALL"]` and a line length of 120 — expect strict lint. Type-check with `ty`; suppressions already exist for `invalid-argument-type` around `LifespanManager` / `ASGITransport` / DTO list construction.
