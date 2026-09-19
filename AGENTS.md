@@ -40,3 +40,17 @@ Python is 3.14, dependencies managed by `uv`. The API is exposed on `:8000`.
 - Deck responses are deliberately two-shaped: `list_decks`/`create_deck`/`update_deck` return the light `schemas.Deck` (no `cards`), while `get_deck` returns `schemas.DeckWithCards`. The split mirrors loading — lists use `noload` (no cards query), detail uses `selectinload` via `fetch_with_cards` — so the type states exactly what each endpoint loads.
 - Domain exceptions: register handlers in `application.build_app`'s `exception_handlers` dict (see `DuplicateKeyError` → `exceptions.duplicate_key_error_handler`). For per-handler 404s the code raises `litestar.exceptions.HTTPException` directly.
 - `ruff` is configured with `select = ["ALL"]` and a line length of 120 — expect strict lint. Type-check with `ty`; suppressions already exist for `invalid-argument-type` around `LifespanManager` / `ASGITransport` / DTO list construction.
+
+## Agent skills
+
+### Issue tracker
+
+GitHub issues on `modern-python/litestar-sqlalchemy-template`, via `gh`. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five canonical roles, each label string equal to its name. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` and `docs/adr/` at the repo root. See `docs/agents/domain.md`.
