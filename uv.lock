@@ -521,7 +521,7 @@ requires-dist = [
     { name = "granian", extras = ["uvloop"] },
     { name = "lite-bootstrap", extras = ["litestar-all"] },
     { name = "litestar" },
-    { name = "modern-di-litestar", specifier = ">=2" },
+    { name = "modern-di-litestar", specifier = ">=3,<4" },
     { name = "opentelemetry-instrumentation-asyncpg" },
     { name = "opentelemetry-instrumentation-sqlalchemy" },
     { name = "psycopg" },
