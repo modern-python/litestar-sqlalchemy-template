@@ -17,8 +17,8 @@ dependencies = [
     "granian[uvloop]",
     # database
     "alembic",
-    "psycopg2",
-    "sqlalchemy[asyncio]",
+    "psycopg",
+    "sqlalchemy[asyncio]<2.1",
     "asyncpg",
     # tracing
     "opentelemetry-instrumentation-asyncpg",
@@ -61,6 +61,7 @@ ignore = [
     "COM812", # flake8-commas "Trailing comma missing"
     "ISC001", # flake8-implicit-str-concat
     "S105", # Possible hardcoded password
+    "CPY001", # Missing copyright notice at top of file
 ]
 isort.lines-after-imports = 2
 isort.no-lines-before = ["standard-library", "local-folder"]

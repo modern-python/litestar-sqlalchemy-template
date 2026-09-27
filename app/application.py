@@ -23,7 +23,7 @@ def build_app() -> litestar.Litestar:
     bootstrap_config = dataclasses.replace(
         settings.api_bootstrapper_config,
         application_config=AppConfig(
-            exception_handlers={  # ty: ignore[invalid-argument-type]
+            exception_handlers={
                 DuplicateKeyError: exceptions.duplicate_key_error_handler,
                 NotFoundError: exceptions.not_found_error_handler,
             },
