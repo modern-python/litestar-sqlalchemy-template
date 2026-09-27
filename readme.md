@@ -24,6 +24,8 @@ Production-ready dockerized async REST API on LiteStar with SQLAlchemy and Postg
 - Linting and formatting using `ruff` and `ty`
 - `Alembic` for DB migrations
 
+Authentication is intentionally omitted: pick the scheme that fits your project and add it as a Litestar guard or middleware.
+
 You can clone this project or use [this template](https://github.com/modern-python/modern-python-template) for fast [micro]service creation from scratch.
 
 ### After `git clone` run
