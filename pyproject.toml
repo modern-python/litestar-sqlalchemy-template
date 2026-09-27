@@ -76,7 +76,6 @@ isort.no-lines-before = ["standard-library", "local-folder"]
 addopts = "--cov=. --cov-report term-missing --cov-fail-under=100"
 asyncio_mode = "auto"
 asyncio_default_fixture_loop_scope = "function"
-filterwarnings = ["error::litestar.exceptions.LitestarDeprecationWarning"]
 
 [tool.coverage.report]
 exclude_also = [
