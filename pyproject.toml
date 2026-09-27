@@ -11,7 +11,7 @@ license = "MIT License"
 dependencies = [
     "litestar",
     "lite-bootstrap[litestar-all]",
-    "modern-di-litestar>=2",
+    "modern-di-litestar>=3,<4",
     "advanced-alchemy",
     "pydantic-settings",
     "granian[uvloop]",
