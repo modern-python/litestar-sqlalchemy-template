@@ -1,11 +1,11 @@
 import typing
 
 import litestar
-from litestar.di import NamedDependency  # noqa: TC002
-from litestar.params import FromPath  # noqa: TC002
+from litestar.di import NamedDependency
+from litestar.params import FromPath
 
 from app import models, schemas
-from app.repositories import CardsRepository  # noqa: TC001
+from app.repositories import CardsRepository
 
 
 @litestar.get("/decks/{deck_id:int}/cards/")

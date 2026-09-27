@@ -62,14 +62,12 @@ ignore = [
     "ISC001", # flake8-implicit-str-concat
     "S105", # Possible hardcoded password
     "CPY001", # Missing copyright notice at top of file
+    "TC", # Litestar and modern-di read annotations at runtime
 ]
 isort.lines-after-imports = 2
 isort.no-lines-before = ["standard-library", "local-folder"]
 
 [tool.ruff.lint.extend-per-file-ignores]
-"app/resources/*.py" = [
-    "TC", # modern-di reads DI creator annotations at runtime
-]
 "tests/*.py" = [
     "S101", # allow asserts
 ]
