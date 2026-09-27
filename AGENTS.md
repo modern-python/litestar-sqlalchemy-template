@@ -21,17 +21,19 @@ Python is 3.14, dependencies managed by `uv`. The API is exposed on `:8000`.
 **Request flow**: `app/__main__.py` → `granian` → `app.application:build_app` (factory) → `LitestarBootstrapper` from `lite-bootstrap` wraps a `litestar.Litestar` with OpenTelemetry (asyncpg + SQLAlchemy instrumentors), Sentry, CORS, Swagger, etc., based on `Settings.api_bootstrapper_config`.
 
 **Dependency injection** (`app/ioc.py`): `modern_di.Container` is created in `build_app` with the `Dependencies` group and attached via `modern_di_litestar.ModernDIPlugin`. Route handlers receive repositories as parameters; `application.py` declares them with `modern_di_litestar.FromDI(...)` so Litestar resolves them per-request. Provider scopes:
-- `database_engine` — application-scoped factory, finalizer disposes the engine
-- `session` — request-scoped, finalizer closes the session
+- `database_engine` — application-scoped primary engine, finalizer disposes the engine
+- `database_replica_engine` — application-scoped replica engine built from `DB_REPLICA_DSN`, or `None` when it is unset
+- `dynamic_engine` — request-scoped; `choose_sa_engine` returns the replica for `GET`/`HEAD` requests when one is configured, the primary otherwise (including when there is no request). GET handlers must not write, and a read right after a write may see replica lag
+- `session` — request-scoped, bound to `dynamic_engine`, finalizer closes the session
 - `*_repository` — request-scoped, depend on `session`, configured with `auto_commit=True` (advanced-alchemy commits on success / rolls back on exception)
 
 **Persistence**: Models inherit `advanced_alchemy.base.BigIntAuditBase` (gives `id: BigInt`, `created_at`, `updated_at`). Metadata is shared with `orm.DeclarativeBase.metadata` in `app/models.py` so Alembic autogen sees everything. Repositories are `SQLAlchemyAsyncRepositoryService[Model]` with a nested `BaseRepository(SQLAlchemyAsyncRepository[Model])`. Custom `CustomAsyncSession` in `app/resources/db.py` overrides `close()` so test transactions are not actually closed when the session is bound to an `AsyncConnection` — this is what makes the per-test rollback fixture work.
 
-**Test isolation** (`tests/conftest.py`): `db_session` fixture opens a connection, starts a transaction, starts a SAVEPOINT, then **overrides** `Dependencies.database_engine` in the DI container to return that connection. All requests in the test reuse this connection; the outer transaction is rolled back in teardown, so DB state is clean between tests with no truncation needed. `app` and `client` fixtures build the real app and run it through `httpx.ASGITransport` + `asgi_lifespan.LifespanManager`. Polyfactory `SQLAlchemyFactory` is wired up via `set_async_session_in_base_sqlalchemy_factory`.
+**Test isolation** (`tests/conftest.py`): `db_session` fixture opens a connection, starts a transaction, starts a SAVEPOINT, then **overrides** `Dependencies.dynamic_engine` in the DI container to return that connection. All requests in the test reuse this connection; the outer transaction is rolled back in teardown, so DB state is clean between tests with no truncation needed. `app` and `client` fixtures build the real app and run it through `httpx.ASGITransport` + `asgi_lifespan.LifespanManager`. Polyfactory `SQLAlchemyFactory` is wired up via `set_async_session_in_base_sqlalchemy_factory`.
 
 **Migrations**: `migrations/env.py` reads `app.models.METADATA` and rewrites the DSN driver from `postgresql+asyncpg` → `postgresql` (Alembic uses sync psycopg2). Always run autogen against an upgraded DB — `just migration` enforces this.
 
-**Settings** (`app/settings.py`): `pydantic_settings.BaseSettings` reads from env vars (see `docker-compose.yml` for `SERVICE_DEBUG`, `SERVICE_ENVIRONMENT`, `DB_DSN`). `api_bootstrapper_config` builds the `LitestarConfig` consumed by `lite-bootstrap`.
+**Settings** (`app/settings.py`): `pydantic_settings.BaseSettings` reads from env vars (see `docker-compose.yml` for `SERVICE_DEBUG`, `SERVICE_ENVIRONMENT`, `DB_DSN`; `DB_REPLICA_DSN` is optional). `api_bootstrapper_config` builds the `LitestarConfig` consumed by `lite-bootstrap`.
 
 ## Conventions
 
@@ -39,7 +41,7 @@ Python is 3.14, dependencies managed by `uv`. The API is exposed on `:8000`.
 - Pydantic schemas in `app/schemas.py` use `from_attributes=True` (via `Base`) so they validate directly from ORM instances (`schemas.X.model_validate(orm_instance)`). Collection responses go through `Collection[T].from_models(...)` (e.g. `schemas.Decks`, `schemas.Cards`).
 - Deck responses are deliberately two-shaped: `list_decks`/`create_deck`/`update_deck` return the light `schemas.Deck` (no `cards`), while `get_deck` returns `schemas.DeckWithCards`. The split mirrors loading — lists use `noload` (no cards query), detail uses `selectinload` via `fetch_with_cards` — so the type states exactly what each endpoint loads.
 - Domain exceptions: register handlers in `application.build_app`'s `exception_handlers` dict (see `DuplicateKeyError` → `exceptions.duplicate_key_error_handler`). For per-handler 404s the code raises `litestar.exceptions.HTTPException` directly.
-- `ruff` is configured with `select = ["ALL"]` and a line length of 120 — expect strict lint. Type-check with `ty`; suppressions already exist for `invalid-argument-type` around `LifespanManager` / `ASGITransport` / DTO list construction.
+- `ruff` is configured with `select = ["ALL"]` and a line length of 120 — expect strict lint. `app/resources/` is exempt from the `TC` rules because modern-di resolves DI creator annotations at runtime. Type-check with `ty`; suppressions already exist for `invalid-argument-type` around `LifespanManager` / `ASGITransport` / DTO list construction.
 
 ## Agent skills
 
