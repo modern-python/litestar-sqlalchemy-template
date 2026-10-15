@@ -19,7 +19,7 @@ Python is 3.14, dependencies managed by `uv`. The API is exposed on `:8000`.
 
 **Stack**: Litestar + SQLAlchemy 2 (async) + advanced-alchemy + Alembic + Postgres + Granian (ASGI server) + modern-di (IoC) + lite-bootstrap (observability/CORS/Sentry/OTel wiring).
 
-**Request flow**: `app/__main__.py` → `granian` → `app.application:build_app` (factory) → `LitestarBootstrapper` from `lite-bootstrap` wraps a `litestar.Litestar` with OpenTelemetry (asyncpg + SQLAlchemy instrumentors), Sentry, CORS, Swagger, etc., based on `Settings.api_bootstrapper_config`.
+**Request flow**: `app/__main__.py` → `granian` → `app.application:build_app` (factory) → `LitestarBootstrapper` from `lite-bootstrap` wraps a `litestar.Litestar` with OpenTelemetry (SQLAlchemy instrumentor), Sentry, CORS, Swagger, etc., based on `Settings.api_bootstrapper_config`.
 
 **Dependency injection** (`app/ioc.py`): `modern_di.Container` is created in `build_app` with the `Dependencies` group and attached via `modern_di_litestar.ModernDIPlugin`. Route handlers receive repositories as parameters; `application.py` declares them with `modern_di_litestar.FromDI(...)` so Litestar resolves them per-request. Provider scopes:
 - `database_engine` — application-scoped primary engine, finalizer disposes the engine
