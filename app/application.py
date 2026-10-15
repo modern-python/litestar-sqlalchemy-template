@@ -6,7 +6,6 @@ import modern_di_litestar
 from advanced_alchemy.exceptions import DuplicateKeyError, NotFoundError
 from lite_bootstrap import LitestarBootstrapper
 from litestar.config.app import AppConfig
-from opentelemetry.instrumentation.asyncpg import AsyncPGInstrumentor
 from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 
 from app import exceptions, ioc, repositories
@@ -35,10 +34,7 @@ def build_app() -> litestar.Litestar:
             },
             request_max_body_size=settings.request_max_body_size,
         ),
-        opentelemetry_instrumentors=[
-            SQLAlchemyInstrumentor(),
-            AsyncPGInstrumentor(capture_parameters=True),
-        ],
+        opentelemetry_instrumentors=[SQLAlchemyInstrumentor()],
     )
     bootstrapper = LitestarBootstrapper(bootstrap_config=bootstrap_config)
     return bootstrapper.bootstrap()
