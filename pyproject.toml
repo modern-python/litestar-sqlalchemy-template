@@ -10,7 +10,7 @@ authors = [
 license = "MIT"
 dependencies = [
     "litestar",
-    "lite-bootstrap[litestar-all]",
+    "lite-bootstrap[litestar-all]>=1.13",
     "modern-di-litestar>=4,<5",
     "advanced-alchemy",
     "pydantic-settings",
