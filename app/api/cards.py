@@ -4,36 +4,39 @@ import litestar
 from litestar.di import NamedDependency
 from litestar.params import FromPath
 
-from app import models, schemas
-from app.repositories import CardsRepository
+from app import schemas
+from app.use_cases.create_cards import CreateCardsUseCase
+from app.use_cases.get_card import GetCardUseCase
+from app.use_cases.list_cards import ListCardsUseCase
+from app.use_cases.update_cards import UpdateCardsUseCase
 
 
 @litestar.get("/decks/{deck_id:int}/cards/")
-async def list_cards(deck_id: FromPath[int], cards_repository: NamedDependency[CardsRepository]) -> schemas.Cards:
-    objects = await cards_repository.list_for_deck(deck_id)
-    return schemas.Cards.from_models(objects)
+async def list_cards(deck_id: FromPath[int], list_cards_use_case: NamedDependency[ListCardsUseCase]) -> schemas.Cards:
+    return schemas.Cards.from_models(await list_cards_use_case(deck_id=deck_id))
 
 
 @litestar.get("/cards/{card_id:int}/")
-async def get_card(card_id: FromPath[int], cards_repository: NamedDependency[CardsRepository]) -> schemas.Card:
-    instance = await cards_repository.get_one(models.Card.id == card_id)
-    return schemas.Card.model_validate(instance)
+async def get_card(card_id: FromPath[int], get_card_use_case: NamedDependency[GetCardUseCase]) -> schemas.Card:
+    return schemas.Card.model_validate(await get_card_use_case(card_id=card_id))
 
 
 @litestar.post("/decks/{deck_id:int}/cards/")
 async def create_cards(
-    deck_id: FromPath[int], data: list[schemas.CardCreate], cards_repository: NamedDependency[CardsRepository]
+    deck_id: FromPath[int],
+    data: list[schemas.CardCreate],
+    create_cards_use_case: NamedDependency[CreateCardsUseCase],
 ) -> schemas.Cards:
-    objects = await cards_repository.add_cards(deck_id, data)
-    return schemas.Cards.from_models(objects)
+    return schemas.Cards.from_models(await create_cards_use_case(deck_id=deck_id, data=data))
 
 
 @litestar.put("/decks/{deck_id:int}/cards/")
 async def update_cards(
-    deck_id: FromPath[int], data: list[schemas.Card], cards_repository: NamedDependency[CardsRepository]
+    deck_id: FromPath[int],
+    data: list[schemas.Card],
+    update_cards_use_case: NamedDependency[UpdateCardsUseCase],
 ) -> schemas.Cards:
-    objects = await cards_repository.upsert_cards(deck_id, data)
-    return schemas.Cards.from_models(objects)
+    return schemas.Cards.from_models(await update_cards_use_case(deck_id=deck_id, data=data))
 
 
 ROUTER: typing.Final = litestar.Router(

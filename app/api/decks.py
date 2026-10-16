@@ -5,35 +5,36 @@ from litestar.di import NamedDependency
 from litestar.params import FromPath
 
 from app import schemas
-from app.repositories import DecksRepository
+from app.use_cases.create_deck import CreateDeckUseCase
+from app.use_cases.get_deck import GetDeckUseCase
+from app.use_cases.list_decks import ListDecksUseCase
+from app.use_cases.update_deck import UpdateDeckUseCase
 
 
 @litestar.get("/decks/")
-async def list_decks(decks_repository: NamedDependency[DecksRepository]) -> schemas.Decks:
-    objects = await decks_repository.get_many()
-    return schemas.Decks.from_models(objects)
+async def list_decks(list_decks_use_case: NamedDependency[ListDecksUseCase]) -> schemas.Decks:
+    return schemas.Decks.from_models(await list_decks_use_case())
 
 
 @litestar.get("/decks/{deck_id:int}/")
-async def get_deck(deck_id: FromPath[int], decks_repository: NamedDependency[DecksRepository]) -> schemas.DeckWithCards:
-    instance = await decks_repository.fetch_with_cards(deck_id)
-    return schemas.DeckWithCards.model_validate(instance)
+async def get_deck(deck_id: FromPath[int], get_deck_use_case: NamedDependency[GetDeckUseCase]) -> schemas.DeckWithCards:
+    return schemas.DeckWithCards.model_validate(await get_deck_use_case(deck_id=deck_id))
 
 
 @litestar.put("/decks/{deck_id:int}/")
 async def update_deck(
     deck_id: FromPath[int],
     data: schemas.DeckCreate,
-    decks_repository: NamedDependency[DecksRepository],
+    update_deck_use_case: NamedDependency[UpdateDeckUseCase],
 ) -> schemas.Deck:
-    instance = await decks_repository.update(data=data.model_dump(), item_id=deck_id)
-    return schemas.Deck.model_validate(instance)
+    return schemas.Deck.model_validate(await update_deck_use_case(deck_id=deck_id, data=data))
 
 
 @litestar.post("/decks/")
-async def create_deck(data: schemas.DeckCreate, decks_repository: NamedDependency[DecksRepository]) -> schemas.Deck:
-    instance = await decks_repository.create(data)
-    return schemas.Deck.model_validate(instance)
+async def create_deck(
+    data: schemas.DeckCreate, create_deck_use_case: NamedDependency[CreateDeckUseCase]
+) -> schemas.Deck:
+    return schemas.Deck.model_validate(await create_deck_use_case(data=data))
 
 
 ROUTER: typing.Final = litestar.Router(
