@@ -4,12 +4,11 @@ from typing import TYPE_CHECKING
 import modern_di
 import modern_di_litestar
 from advanced_alchemy.exceptions import DuplicateKeyError, NotFoundError
-from db_retry import Transaction
 from lite_bootstrap import LitestarBootstrapper
 from litestar.config.app import AppConfig
 from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
 
-from app import exceptions, ioc, repositories
+from app import exceptions, ioc
 from app.api import cards, decks
 from app.settings import settings
 
@@ -19,7 +18,7 @@ if TYPE_CHECKING:
 
 
 def build_app() -> litestar.Litestar:
-    di_container = modern_di.Container(groups=[ioc.Dependencies])
+    di_container = modern_di.Container(groups=ioc.ALL_GROUPS)
     bootstrap_config = dataclasses.replace(
         settings.api_bootstrapper_config,
         application_config=AppConfig(
@@ -28,12 +27,7 @@ def build_app() -> litestar.Litestar:
                 NotFoundError: exceptions.not_found_error_handler,
             },
             route_handlers=[decks.ROUTER, cards.ROUTER],
-            plugins=[modern_di_litestar.ModernDIPlugin(di_container)],
-            dependencies={
-                "decks_repository": modern_di_litestar.FromDI(repositories.DecksRepository),
-                "cards_repository": modern_di_litestar.FromDI(repositories.CardsRepository),
-                "transaction": modern_di_litestar.FromDI(Transaction),
-            },
+            plugins=[modern_di_litestar.ModernDIPlugin(di_container, autowired_groups=[ioc.UseCases])],
             request_max_body_size=settings.request_max_body_size,
         ),
         opentelemetry_instrumentors=[SQLAlchemyInstrumentor()],

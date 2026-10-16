@@ -21,38 +21,44 @@ Python is 3.14, dependencies managed by `uv`. The API is exposed on `:8000`.
 
 **Request flow**: `app/__main__.py` → `granian` → `app.application:build_app` (factory) → `LitestarBootstrapper` from `lite-bootstrap` wraps a `litestar.Litestar` with OpenTelemetry (SQLAlchemy instrumentor), Sentry, CORS, Swagger, etc., based on `Settings.api_bootstrapper_config`.
 
-**Dependency injection** (`app/ioc.py`): `modern_di.Container` is created in `build_app` with the `Dependencies` group and attached via `modern_di_litestar.ModernDIPlugin`. Route handlers receive repositories and the `Transaction` as parameters; `application.py` declares them with `modern_di_litestar.FromDI(...)` so Litestar resolves them per-request. Provider scopes:
+**Dependency injection** (`app/ioc.py`): `modern_di.Container` is created in `build_app` with `ioc.ALL_GROUPS` and attached via `modern_di_litestar.ModernDIPlugin(di_container, autowired_groups=[ioc.UseCases])`. The plugin registers every `UseCases` provider as a Litestar dependency under its attribute name, so a handler asks for `list_decks_use_case: NamedDependency[ListDecksUseCase]` and nothing is declared in `application.py`. Handlers call the use case and convert the result to a schema; they never touch repositories or the session.
+
+`Database` group:
 - `database_engine` — application-scoped primary engine, finalizer disposes the engine
 - `database_read_engine` — application-scoped read engine built from `DB_REPLICA_DSN`, or from `DB_DSN` when it is unset. It runs in `AUTOCOMMIT` (no BEGIN/ROLLBACK per request) and sets `default_transaction_read_only=on`, so Postgres rejects writes on it. Each statement sees its own snapshot, so a multi-query read (e.g. `fetch_with_cards`) can see a write that commits in between. Without a replica it is a second pool on the primary, so a process can hold up to `2 × db_pool_size` connections
 - `dynamic_engine` — request-scoped; `choose_sa_engine` returns the read engine for `GET`/`HEAD` requests, the primary otherwise (including when there is no request). GET handlers cannot write, and a read right after a write may see replica lag
 - `session` — request-scoped, bound to `dynamic_engine`, finalizer closes the session
 - `transaction` — request-scoped `db_retry.Transaction` over `session`. Leaving its block rolls back anything uncommitted and closes the session
-- `*_repository` — request-scoped, depend on `session`, configured with `auto_commit=False`. The handler commits through `transaction.commit()`
 
-**Lost connections**: `pool_pre_ping` is off by default (`DB_POOL_PRE_PING`). A pooled connection that died while idle is handled by `db_retry.postgres_retry` instead, which saves a round trip on every checkout. That only works if the retried function owns its whole transaction, so every handler that touches the database has this shape:
+`Repositories` group (request-scoped): `decks_repository` and `cards_repository`, on `Database.session` with `auto_commit=False`. The use case commits through `transaction.commit()`.
+
+`UseCases` group (request-scoped): one provider per use case in `app/use_cases/`. modern-di fills each dataclass field by its type, so a use case needs no `kwargs`.
+
+**Use cases and lost connections**: `pool_pre_ping` is off by default (`DB_POOL_PRE_PING`). A pooled connection that died while idle is handled by `db_retry.postgres_retry` instead, which saves a round trip on every checkout. That only works if the retried function owns its whole transaction, so every use case has this shape:
 
 ```python
-@litestar.get("/decks/")
-@postgres_retry
-async def list_decks(
-    decks_repository: NamedDependency[DecksRepository], transaction: NamedDependency[Transaction]
-) -> schemas.Decks:
-    async with transaction:
-        objects = await decks_repository.get_many()
-        await transaction.commit()
-    return schemas.Decks.from_models(objects)
+@dataclasses.dataclass(kw_only=True, frozen=True, slots=True)
+class ListDecksUseCase:
+    transaction: Transaction
+    decks_repository: DecksRepository
+
+    @postgres_retry
+    async def __call__(self) -> Sequence[models.Deck]:
+        async with self.transaction:
+            decks: typing.Final = await self.decks_repository.get_many()
+            await self.transaction.commit()
+        return decks
 ```
 
-- `@postgres_retry` goes under the route decorator.
-- Every query runs inside `async with transaction:`. A query before the block leaves the session in a failed transaction on a lost connection, and the retry then fails with `PendingRollbackError`.
+- Every query runs inside `async with self.transaction:`. A query before the block leaves the session in a failed transaction on a lost connection, and the retry then fails with `PendingRollbackError`.
 - Commit before leaving the block, reads included, and before any early return. Otherwise `__aexit__` rolls back, which expires the loaded rows.
-- A retry runs the whole handler again. If the connection drops during `COMMIT`, the write may already have landed, so a non-idempotent write such as `create_deck` can be applied twice.
+- A retry runs the whole use case again. If the connection drops during `COMMIT`, the write may already have landed, so a non-idempotent write such as `CreateDeckUseCase` can be applied twice.
 
 **Persistence**: Models inherit `advanced_alchemy.base.BigIntAuditBase` (gives `id: BigInt`, `created_at`, `updated_at`). Metadata is shared with `orm.DeclarativeBase.metadata` in `app/models.py` so Alembic autogen sees everything. Repositories are `SQLAlchemyAsyncRepositoryService[Model]` with a nested `BaseRepository(SQLAlchemyAsyncRepository[Model])`. `create_session` in `app/resources/db.py` builds a plain `AsyncSession` with `join_transaction_mode="create_savepoint"`. This is inert in production (the session binds to an engine) but enables the per-test rollback fixture: when a test binds the session to a connection already in a transaction, the session owns its own savepoint so the outer transaction survives commits. Do not "fix" it.
 
-**Test isolation** (`tests/conftest.py`): `db_session` fixture opens a connection, starts a transaction, then **overrides** `Dependencies.dynamic_engine` in the DI container to return that connection. All requests in the test reuse this connection. Each session built against it uses `join_transaction_mode="create_savepoint"`, so `transaction.commit()` releases the session's own savepoint while the outer transaction is rolled back in teardown. DB state is clean between tests with no truncation needed. `app` and `client` fixtures build the real app and run it through `httpx.ASGITransport` + `asgi_lifespan.LifespanManager`. Polyfactory `SQLAlchemyFactory` is wired up via `set_async_session_in_base_sqlalchemy_factory`.
+**Test isolation** (`tests/conftest.py`): `db_session` fixture opens a connection, starts a transaction, then **overrides** `Database.dynamic_engine` in the DI container to return that connection. All requests in the test reuse this connection. Each session built against it uses `join_transaction_mode="create_savepoint"`, so `transaction.commit()` releases the session's own savepoint while the outer transaction is rolled back in teardown. DB state is clean between tests with no truncation needed. `app` and `client` fixtures build the real app and run it through `httpx.ASGITransport` + `asgi_lifespan.LifespanManager`. Polyfactory `SQLAlchemyFactory` is wired up via `set_async_session_in_base_sqlalchemy_factory`.
 
-**Connection-loss tests** (`tests/test_connection_loss.py`): they override both engines with fresh ones and terminate a backend with `pg_terminate_backend`. `lost_pooled_connection` kills an idle pooled connection on each engine and goes through the HTTP client; `lost_connection` kills the connection a request session already holds and calls the handler's `.fn` directly. These tests commit for real, so `stored_ids` truncates `decks` and `cards` before and after. Each retry sleeps 1 to 2 seconds, which is most of the suite's run time.
+**Connection-loss tests** (`tests/test_connection_loss.py`): they override both engines with fresh ones and terminate a backend with `pg_terminate_backend`. `lost_pooled_connection` kills an idle pooled connection on each engine and goes through the HTTP client; `lost_connection` kills the connection a request session already holds and calls each use case directly. These tests commit for real, so `stored_ids` truncates `decks` and `cards` before and after. Each retry sleeps 1 to 2 seconds, which is most of the suite's run time.
 
 **Migrations**: `migrations/env.py` reads `app.models.METADATA` and rewrites the DSN driver from `postgresql+asyncpg` → `postgresql+psycopg` (Alembic runs on sync psycopg 3). Always run autogen against an upgraded DB — `just migration` enforces this.
 
@@ -60,7 +66,7 @@ async def list_decks(
 
 ## Conventions
 
-- Routes live in `app/api/`, one module per resource (`decks.py`, `cards.py`), each exposing its own `ROUTER` (`litestar.Router`, prefix `/api`). `application.build_app` registers them all via `route_handlers=[decks.ROUTER, cards.ROUTER]`. Add a new resource by creating `app/api/<name>.py`, defining handlers + a `ROUTER`, and adding it to that list.
+- Routes live in `app/api/`, one module per resource (`decks.py`, `cards.py`), each exposing its own `ROUTER` (`litestar.Router`, prefix `/api`). `application.build_app` registers them all via `route_handlers=[decks.ROUTER, cards.ROUTER]`. Add a new resource by creating `app/api/<name>.py`, defining handlers + a `ROUTER`, and adding it to that list. Its database work goes in `app/use_cases/` with a provider in `ioc.UseCases`.
 - Pydantic schemas in `app/schemas.py` use `from_attributes=True` (via `Base`) so they validate directly from ORM instances (`schemas.X.model_validate(orm_instance)`). Collection responses go through `Collection[T].from_models(...)` (e.g. `schemas.Decks`, `schemas.Cards`).
 - Deck responses are deliberately two-shaped: `list_decks`/`create_deck`/`update_deck` return the light `schemas.Deck` (no `cards`), while `get_deck` returns `schemas.DeckWithCards`. The split mirrors loading — lists use `noload` (no cards query), detail uses `selectinload` via `fetch_with_cards` — so the type states exactly what each endpoint loads.
 - Domain exceptions: register handlers in `application.build_app`'s `exception_handlers` dict (`DuplicateKeyError` → `exceptions.duplicate_key_error_handler` returns 400, `NotFoundError` → `exceptions.not_found_error_handler` returns 404). Handlers don't raise HTTP errors themselves: a missing row surfaces as advanced-alchemy's `NotFoundError`.
