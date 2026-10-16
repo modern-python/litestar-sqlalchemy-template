@@ -10,6 +10,7 @@ Almost everything runs through Docker Compose: the app and Postgres come up toge
 
 - `just test` cycles the DB (downgrade to `base`, upgrade to `head`) before pytest and tears the stack down before and after. Pass pytest args through, e.g. `just test tests/test_decks.py::test_post_decks -x`.
 - pytest runs with `--cov=. --cov-report term-missing --cov-fail-under=100` (`pyproject.toml`), so `just test` fails unless tests cover every line of new code.
+- `just test-migrations` runs the `pytest-alembic` suite in `tests/migrations/` against an empty database: single head, upgrade, up/down consistency for every revision, and models matching the migrated schema (`alembic check` as a test). `just test` skips that directory (`--ignore` in `addopts`, `omit` in coverage) because it migrates the schema under the transaction-rollback fixture, so the recipe clears `addopts`. CI runs both suites as separate jobs.
 - `just migration -m "message"` autogenerates an Alembic revision **against an already-upgraded DB** — the recipe enforces this, so don't run autogen by hand.
 - `just lint` runs `eof-fixer`, `ruff format`, `ruff check --fix`, then `ty check`.
 
