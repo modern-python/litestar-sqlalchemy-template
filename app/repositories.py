@@ -1,3 +1,4 @@
+import uuid
 from typing import TYPE_CHECKING
 
 from advanced_alchemy.repository import SQLAlchemyAsyncRepository
@@ -16,6 +17,9 @@ class DecksRepository(SQLAlchemyAsyncRepositoryService[models.Deck]):
         model_type = models.Deck
 
     repository_type = BaseRepository
+
+    async def fetch_by_idempotency_key(self, idempotency_key: uuid.UUID) -> models.Deck | None:
+        return await self.get_one_or_none(idempotency_key=idempotency_key)
 
     async def fetch_with_cards(self, deck_id: int) -> models.Deck:
         return await self.get_one(

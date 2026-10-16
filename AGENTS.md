@@ -52,7 +52,10 @@ class ListDecksUseCase:
 
 - Every query runs inside `async with self.transaction:`. A query before the block leaves the session in a failed transaction on a lost connection, and the retry then fails with `PendingRollbackError`.
 - Commit before leaving the block, reads included, and before any early return. Otherwise `__aexit__` rolls back, which expires the loaded rows.
-- A retry runs the whole use case again. If the connection drops during `COMMIT`, the write may already have landed, so a non-idempotent write such as `CreateDeckUseCase` can be applied twice.
+- A retry runs the whole use case again. If the connection drops during `COMMIT`, the write may already have landed. A write that creates rows needs something that makes the second run harmless:
+  - `CreateDeckUseCase` takes a client-generated `idempotency_key` (`schemas.DeckCreate`, unique on `decks`). It looks the key up inside the transaction and returns the existing deck when it finds one, so a retry, or a client resending the request, gets the first deck back. Two concurrent requests with one key can still both miss the lookup; the second then fails on the unique constraint as a duplicate-key error.
+  - `CreateCardsUseCase` relies on the `(deck_id, front)` unique constraint. A replay is rejected as a duplicate-key error rather than creating the cards twice.
+  - Updates (`UpdateDeckUseCase`, `UpdateCardsUseCase`) write the same values again, so a replay is harmless.
 
 **Persistence**: Models inherit `advanced_alchemy.base.BigIntAuditBase` (gives `id: BigInt`, `created_at`, `updated_at`). Metadata is shared with `orm.DeclarativeBase.metadata` in `app/models.py` so Alembic autogen sees everything. Repositories are `SQLAlchemyAsyncRepositoryService[Model]` with a nested `BaseRepository(SQLAlchemyAsyncRepository[Model])`. `create_session` in `app/resources/db.py` builds a plain `AsyncSession` with `join_transaction_mode="create_savepoint"`. This is inert in production (the session binds to an engine) but enables the per-test rollback fixture: when a test binds the session to a connection already in a transaction, the session owns its own savepoint so the outer transaction survives commits. Do not "fix" it.
 
