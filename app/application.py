@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 import modern_di
 import modern_di_litestar
 from advanced_alchemy.exceptions import DuplicateKeyError, NotFoundError
+from db_retry import Transaction
 from lite_bootstrap import LitestarBootstrapper
 from litestar.config.app import AppConfig
 from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
@@ -31,6 +32,7 @@ def build_app() -> litestar.Litestar:
             dependencies={
                 "decks_repository": modern_di_litestar.FromDI(repositories.DecksRepository),
                 "cards_repository": modern_di_litestar.FromDI(repositories.CardsRepository),
+                "transaction": modern_di_litestar.FromDI(Transaction),
             },
             request_max_body_size=settings.request_max_body_size,
         ),
