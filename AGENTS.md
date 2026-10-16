@@ -23,8 +23,8 @@ Python is 3.14, dependencies managed by `uv`. The API is exposed on `:8000`.
 
 **Dependency injection** (`app/ioc.py`): `modern_di.Container` is created in `build_app` with the `Dependencies` group and attached via `modern_di_litestar.ModernDIPlugin`. Route handlers receive repositories as parameters; `application.py` declares them with `modern_di_litestar.FromDI(...)` so Litestar resolves them per-request. Provider scopes:
 - `database_engine` — application-scoped primary engine, finalizer disposes the engine
-- `database_replica_engine` — application-scoped replica engine built from `DB_REPLICA_DSN`, or `None` when it is unset
-- `dynamic_engine` — request-scoped; `choose_sa_engine` returns the replica for `GET`/`HEAD` requests when one is configured, the primary otherwise (including when there is no request). GET handlers must not write, and a read right after a write may see replica lag
+- `database_read_engine` — application-scoped read engine built from `DB_REPLICA_DSN`, or from `DB_DSN` when it is unset. It runs in `AUTOCOMMIT` (no BEGIN/ROLLBACK per request, and the pre-ping is a bare `;`) and sets `default_transaction_read_only=on`, so Postgres rejects writes on it. Each statement sees its own snapshot, so a multi-query read (e.g. `fetch_with_cards`) can see a write that commits in between. Without a replica it is a second pool on the primary, so a process can hold up to `2 × db_pool_size` connections
+- `dynamic_engine` — request-scoped; `choose_sa_engine` returns the read engine for `GET`/`HEAD` requests, the primary otherwise (including when there is no request). GET handlers cannot write, and a read right after a write may see replica lag
 - `session` — request-scoped, bound to `dynamic_engine`, finalizer closes the session
 - `*_repository` — request-scoped, depend on `session`, configured with `auto_commit=True` (advanced-alchemy commits on success / rolls back on exception)
 
