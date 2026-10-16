@@ -24,7 +24,7 @@ async def get_deck(deck_id: FromPath[int], get_deck_use_case: NamedDependency[Ge
 @litestar.put("/decks/{deck_id:int}/")
 async def update_deck(
     deck_id: FromPath[int],
-    data: schemas.DeckCreate,
+    data: schemas.DeckUpdate,
     update_deck_use_case: NamedDependency[UpdateDeckUseCase],
 ) -> schemas.Deck:
     return schemas.Deck.model_validate(await update_deck_use_case(deck_id=deck_id, data=data))
