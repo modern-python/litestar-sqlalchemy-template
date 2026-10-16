@@ -421,14 +421,14 @@ wheels = [
 
 [[package]]
 name = "lite-bootstrap"
-version = "1.9.2"
+version = "1.13.0"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "typing-extensions" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/2a/fd/5313200256e345fb2ae81719342331144949df64b33188610105532ae319/lite_bootstrap-1.9.2.tar.gz", hash = "sha256:5f3d1a0a2b49f5426777f268034980eca84f5cb52015a971017104baa7ec83ba", size = 1838404, upload-time = "2026-09-20T17:35:17.307Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/33/71/645aaf63a35ef09615c03d22958ebe7244bbc5349a5e3d3c2e13886def7a/lite_bootstrap-1.13.0.tar.gz", hash = "sha256:ec5e0897fa1855f4911d0b61467b2da954500d3a8ee977eb7e71bc006090d921", size = 1843890, upload-time = "2026-10-16T11:07:05.788Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/16/01/4b8bfd0818e5e799b7ffd3947e3cae70657b5cfb06d6c585e91b8e2cfd92/lite_bootstrap-1.9.2-py3-none-any.whl", hash = "sha256:35381b70b0e070b7abcc24e820d289899d9aadd8bee5ce8ce747402307633849", size = 1850273, upload-time = "2026-09-20T17:35:15.705Z" },
+    { url = "https://files.pythonhosted.org/packages/ab/8e/1a53f12b0a18a55c98cb54cefef7e1520eadb26ee0261ce6295a8041546a/lite_bootstrap-1.13.0-py3-none-any.whl", hash = "sha256:36ae7d76fed4d5c0b782e199367ab47e4d22ff2d87a578fa84112a9ded89fa22", size = 1853736, upload-time = "2026-10-16T11:07:03.922Z" },
 ]
 
 [package.optional-dependencies]
@@ -518,7 +518,7 @@ requires-dist = [
     { name = "alembic" },
     { name = "asyncpg" },
     { name = "granian", extras = ["uvloop"] },
-    { name = "lite-bootstrap", extras = ["litestar-all"] },
+    { name = "lite-bootstrap", extras = ["litestar-all"], specifier = ">=1.13" },
     { name = "litestar" },
     { name = "modern-di-litestar", specifier = ">=4,<5" },
     { name = "opentelemetry-instrumentation-sqlalchemy" },
