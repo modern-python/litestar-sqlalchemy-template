@@ -44,9 +44,9 @@ class ListDecksUseCase:
     decks_repository: DecksRepository
 
     @postgres_retry
-    async def __call__(self) -> Sequence[models.Deck]:
+    async def __call__(self, *, after: int | None, limit: int) -> Sequence[models.Deck]:
         async with self.transaction:
-            decks: typing.Final = await self.decks_repository.get_many()
+            decks: typing.Final = await self.decks_repository.list_decks(after=after, limit=limit)
             await self.transaction.commit()
         return decks
 ```
@@ -69,7 +69,8 @@ class ListDecksUseCase:
 ## Conventions
 
 - Routes live in `app/api/`, one module per resource (`decks.py`, `cards.py`), each exposing its own `ROUTER` (`litestar.Router`, prefix `/api`). `application.build_app` registers them all via `route_handlers=[decks.ROUTER, cards.ROUTER]`. Add a new resource by creating `app/api/<name>.py`, defining handlers + a `ROUTER`, and adding it to that list. Its database work goes in `app/use_cases/` with a provider in `ioc.UseCases`.
-- Pydantic schemas in `app/schemas.py` use `from_attributes=True` (via `Base`) so they validate directly from ORM instances (`schemas.X.model_validate(orm_instance)`). Collection responses go through `Collection[T].from_models(...)` (e.g. `schemas.Decks`, `schemas.Cards`).
+- Pydantic schemas in `app/schemas.py` use `from_attributes=True` (via `Base`) so they validate directly from ORM instances (`schemas.X.model_validate(orm_instance)`). Collection responses go through `Collection[T].from_models(...)` (e.g. `schemas.Cards`).
+- List endpoints page by id (keyset). They take `limit` (1 to `schemas.MAX_PAGE_LIMIT`, default `schemas.DEFAULT_PAGE_LIMIT`) and `after`, the last id the client has seen, and return a `Page[T]` subclass (`schemas.DecksPage`, `schemas.CardsPage`) with `items` and `next_after`. The repository filters `id > after` and fetches `limit + 1` rows ordered by id. `Page.from_models(rows, limit=limit)` drops the extra row and sets `next_after` to the last returned id when that row existed, or `null` on the last page. Don't page with OFFSET: Postgres reads and discards every skipped row.
 - Deck responses are deliberately two-shaped: `list_decks`/`create_deck`/`update_deck` return the light `schemas.Deck` (no `cards`), while `get_deck` returns `schemas.DeckWithCards`. The split mirrors loading — lists use `noload` (no cards query), detail uses `joinedload` via `fetch_with_cards` — so the type states exactly what each endpoint loads.
 - Domain exceptions: register handlers in `application.build_app`'s `exception_handlers` dict (`DuplicateKeyError` → `exceptions.duplicate_key_error_handler` returns 400, `NotFoundError` → `exceptions.not_found_error_handler` returns 404). Handlers don't raise HTTP errors themselves: a missing row surfaces as advanced-alchemy's `NotFoundError`.
 - `ruff` is configured with `select = ["ALL"]` and a line length of 120 — expect strict lint. `app/resources/` is exempt from the `TC` rules because modern-di resolves DI creator annotations at runtime. Type-check with `ty`; suppressions already exist for `invalid-argument-type` around `LifespanManager` / `ASGITransport` in `tests/conftest.py`.
