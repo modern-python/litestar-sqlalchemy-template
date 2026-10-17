@@ -33,7 +33,7 @@ async def create_cards(
 @litestar.put("/decks/{deck_id:int}/cards/")
 async def update_cards(
     deck_id: FromPath[int],
-    data: list[schemas.Card],
+    data: list[schemas.CardUpdate],
     update_cards_use_case: NamedDependency[UpdateCardsUseCase],
 ) -> schemas.Cards:
     return schemas.Cards.from_models(await update_cards_use_case(deck_id=deck_id, data=data))
