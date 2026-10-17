@@ -1,8 +1,9 @@
 import typing
+from typing import Annotated
 
 import litestar
 from litestar.di import NamedDependency
-from litestar.params import FromPath
+from litestar.params import FromPath, QueryParameter
 
 from app import schemas
 from app.use_cases.create_deck import CreateDeckUseCase
@@ -12,8 +13,13 @@ from app.use_cases.update_deck import UpdateDeckUseCase
 
 
 @litestar.get("/decks/")
-async def list_decks(list_decks_use_case: NamedDependency[ListDecksUseCase]) -> schemas.Decks:
-    return schemas.Decks.from_models(await list_decks_use_case())
+async def list_decks(
+    list_decks_use_case: NamedDependency[ListDecksUseCase],
+    after: Annotated[int | None, QueryParameter(gt=0)] = None,
+    limit: Annotated[int, QueryParameter(ge=1, le=schemas.MAX_PAGE_LIMIT)] = schemas.DEFAULT_PAGE_LIMIT,
+) -> schemas.DecksPage:
+    decks: typing.Final = await list_decks_use_case(after=after, limit=limit)
+    return schemas.DecksPage.from_models(decks, limit=limit)
 
 
 @litestar.get("/decks/{deck_id:int}/")
