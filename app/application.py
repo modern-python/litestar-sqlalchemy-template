@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 import modern_di
 import modern_di_litestar
-from advanced_alchemy.exceptions import DuplicateKeyError, NotFoundError
+from advanced_alchemy.exceptions import DuplicateKeyError, ForeignKeyError, NotFoundError
 from lite_bootstrap import LitestarBootstrapper
 from litestar.config.app import AppConfig
 from opentelemetry.instrumentation.sqlalchemy import SQLAlchemyInstrumentor
@@ -25,6 +25,7 @@ def build_app() -> litestar.Litestar:
             exception_handlers={
                 DuplicateKeyError: exceptions.duplicate_key_error_handler,
                 NotFoundError: exceptions.not_found_error_handler,
+                ForeignKeyError: exceptions.not_found_error_handler,
             },
             route_handlers=[decks.ROUTER, cards.ROUTER],
             plugins=[modern_di_litestar.ModernDIPlugin(di_container, autowired_groups=[ioc.UseCases])],

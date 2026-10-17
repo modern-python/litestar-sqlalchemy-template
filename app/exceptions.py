@@ -5,7 +5,7 @@ from litestar import status_codes
 
 
 if typing.TYPE_CHECKING:
-    from advanced_alchemy.exceptions import DuplicateKeyError, NotFoundError
+    from advanced_alchemy.exceptions import DuplicateKeyError, ForeignKeyError, NotFoundError
 
 
 def duplicate_key_error_handler(_: object, exc: DuplicateKeyError) -> litestar.Response[dict[str, typing.Any]]:
@@ -16,7 +16,7 @@ def duplicate_key_error_handler(_: object, exc: DuplicateKeyError) -> litestar.R
     )
 
 
-def not_found_error_handler(_: object, __: NotFoundError) -> litestar.Response[dict[str, typing.Any]]:
+def not_found_error_handler(_: object, __: NotFoundError | ForeignKeyError) -> litestar.Response[dict[str, typing.Any]]:
     return litestar.Response(
         media_type=litestar.MediaType.JSON,
         content={"detail": "Not found"},
