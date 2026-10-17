@@ -36,6 +36,8 @@ Python is 3.14, dependencies managed by `uv`. The API is exposed on `:8000`.
 
 `UseCases` group (request-scoped): one provider per use case in `app/use_cases/`. modern-di fills each dataclass field by its type, so a use case needs no `kwargs`.
 
+**Pool and server sizing**: `DB_POOL_SIZE` (positive) and `DB_MAX_OVERFLOW` (non-negative) size the pool, and `app/__main__.py` sets Granian's `backpressure` to their sum, so each worker accepts only as many requests at once as it has connections. Requests beyond that wait in Granian's socket backlog instead of queueing on the pool. `APP_WORKERS` sets the Granian worker count, and each worker has its own pool. `DB_POOL_TIMEOUT` (default 30 s) bounds the wait for a connection, and a timeout returns 503 through `exceptions.database_unavailable_handler`. advanced-alchemy wraps the timeout in a `RepositoryError`, so the handler is also registered for `RepositoryError` and answers anything not caused by a pool timeout the way Litestar's default handler would: the debug page when `SERVICE_DEBUG` is on, a plain 500 otherwise. `DB_POOL_RECYCLE` defaults to SQLAlchemy's `-1` (never). Set it below the idle timeout of any proxy or load balancer in front of Postgres, so a connection it dropped is not handed out and retried after a 1-2 s backoff.
+
 **Use cases and lost connections**: `pool_pre_ping` is off by default (`DB_POOL_PRE_PING`). A pooled connection that died while idle is handled by `db_retry.postgres_retry` instead, which saves a round trip on every checkout. That only works if the retried function owns its whole transaction, so every use case has this shape:
 
 ```python
@@ -65,7 +67,7 @@ class ListDecksUseCase:
 
 **Migrations**: `migrations/env.py` reads `app.models.METADATA` and rewrites the DSN driver from `postgresql+asyncpg` → `postgresql+psycopg` (Alembic runs on sync psycopg 3). Always run autogen against an upgraded DB — `just migration` enforces this.
 
-**Settings** (`app/settings.py`): `pydantic_settings.BaseSettings` reads from env vars (see `docker-compose.yml` for `SERVICE_DEBUG`, `SERVICE_ENVIRONMENT`, `DB_DSN`; `DB_REPLICA_DSN` is optional). `api_bootstrapper_config` builds the `LitestarConfig` consumed by `lite-bootstrap`.
+**Settings** (`app/settings.py`): `pydantic_settings.BaseSettings` reads from env vars (see `docker-compose.yml` for `SERVICE_DEBUG`, `SERVICE_ENVIRONMENT`, `DB_DSN`; `DB_REPLICA_DSN` is optional). Pool and server sizing uses `DB_POOL_SIZE`, `DB_MAX_OVERFLOW`, `DB_POOL_TIMEOUT`, `DB_POOL_RECYCLE` and `APP_WORKERS` (see **Pool and server sizing**). `api_bootstrapper_config` builds the `LitestarConfig` consumed by `lite-bootstrap`.
 
 ## Conventions
 
@@ -73,7 +75,7 @@ class ListDecksUseCase:
 - Pydantic schemas in `app/schemas.py` use `from_attributes=True` (via `Base`) so they validate directly from ORM instances (`schemas.X.model_validate(orm_instance)`). Collection responses go through `Collection[T].from_models(...)` (e.g. `schemas.Cards`).
 - List endpoints page by id (keyset). They take `limit` (1 to `schemas.MAX_PAGE_LIMIT`, default `schemas.DEFAULT_PAGE_LIMIT`) and `after`, the last id the client has seen, and return a `Page[T]` subclass (`schemas.DecksPage`, `schemas.CardsPage`) with `items` and `next_after`. The repository filters `id > after` and fetches `limit + 1` rows ordered by id. `Page.from_models(rows, limit=limit)` drops the extra row and sets `next_after` to the last returned id when that row existed, or `null` on the last page. Don't page with OFFSET: Postgres reads and discards every skipped row.
 - Deck responses are deliberately two-shaped: `list_decks`/`create_deck`/`update_deck` return the light `schemas.Deck` (no `cards`), while `get_deck` returns `schemas.DeckWithCards`. The split mirrors loading — lists use `noload` (no cards query), detail uses `joinedload` via `fetch_with_cards` — so the type states exactly what each endpoint loads.
-- Domain exceptions: register handlers in `application.build_app`'s `exception_handlers` dict (`DuplicateKeyError` → `exceptions.duplicate_key_error_handler` returns 400, `NotFoundError` → `exceptions.not_found_error_handler` returns 404). Handlers don't raise HTTP errors themselves: a missing row surfaces as advanced-alchemy's `NotFoundError`.
+- Domain exceptions: register handlers in `application.build_app`'s `exception_handlers` dict (`DuplicateKeyError` → `exceptions.duplicate_key_error_handler` returns 400, `NotFoundError` and `ForeignKeyError` → `exceptions.not_found_error_handler` returns 404, `sqlalchemy.exc.TimeoutError` and `RepositoryError` → `exceptions.database_unavailable_handler` returns 503 for a pool timeout). Handlers don't raise HTTP errors themselves: a missing row surfaces as advanced-alchemy's `NotFoundError`.
 - `ruff` is configured with `select = ["ALL"]` and a line length of 120 — expect strict lint. `app/resources/` is exempt from the `TC` rules because modern-di resolves DI creator annotations at runtime. Type-check with `ty`; suppressions already exist for `invalid-argument-type` around `LifespanManager` / `ASGITransport` in `tests/conftest.py`.
 
 ## Agent skills
