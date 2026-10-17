@@ -2,6 +2,7 @@ import typing
 
 import litestar
 from litestar.di import NamedDependency
+from litestar.exceptions import ValidationException
 from litestar.params import FromPath
 
 from app import schemas
@@ -36,6 +37,8 @@ async def update_cards(
     data: list[schemas.CardUpdate],
     update_cards_use_case: NamedDependency[UpdateCardsUseCase],
 ) -> schemas.Cards:
+    if len({card.id for card in data}) != len(data):
+        raise ValidationException(detail="card ids must be unique")
     return schemas.Cards.from_models(await update_cards_use_case(deck_id=deck_id, data=data))
 
 
