@@ -67,7 +67,7 @@ class ListDecksUseCase:
 
 **Migrations**: `migrations/env.py` reads `app.models.METADATA` and rewrites the DSN driver from `postgresql+asyncpg` to `postgresql+psycopg` (Alembic runs on sync psycopg 3). Always run autogen against an upgraded DB; `just migration` enforces this.
 
-**Settings** (`app/settings.py`): `pydantic_settings.BaseSettings` reads from env vars (see `docker-compose.yml` for `SERVICE_DEBUG`, `SERVICE_ENVIRONMENT`, `DB_DSN`; `DB_REPLICA_DSN` is optional). Pool and server sizing uses `DB_POOL_SIZE`, `DB_MAX_OVERFLOW`, `DB_POOL_TIMEOUT`, `DB_POOL_RECYCLE` and `APP_WORKERS` (see **Pool and server sizing**). `api_bootstrapper_config` builds the `LitestarConfig` consumed by `lite-bootstrap`.
+**Settings** (`app/settings.py`): `pydantic_settings.BaseSettings` reads from env vars (see `docker-compose.yml` for `SERVICE_DEBUG`, `SERVICE_ENVIRONMENT`, `DB_DSN`; `DB_REPLICA_DSN` is optional). Pool and server sizing uses `DB_POOL_SIZE`, `DB_MAX_OVERFLOW`, `DB_POOL_TIMEOUT`, `DB_POOL_RECYCLE` and `APP_WORKERS` (see **Pool and server sizing**). `api_bootstrapper_config` builds the `LitestarConfig` consumed by `lite-bootstrap`. Components get settings from the container through `ioc.Config.settings`. The engines take the whole object and get their URL from `Config.settings.derive(...)`, so a test can change their config with `container.override(ioc.Config.settings, Settings(...))` on a container that has not built the engines yet, since the engines are cached. `app/__main__.py`, `migrations/env.py` and `build_app` read the module-level `settings` instead, because they run outside the container or before it exists.
 
 ## Conventions
 
