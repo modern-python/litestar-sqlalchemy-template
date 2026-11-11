@@ -47,6 +47,8 @@ The template also turns off the ASGI `send` and `receive` spans (`opentelemetry_
 
 - [License](https://github.com/modern-python/litestar-sqlalchemy-template/blob/main/LICENSE)
 
+If this project saves you time, consider giving it a star on GitHub.
+
 ## Part of `modern-python`
 
 Browse the full list of templates and libraries in
